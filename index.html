@@ -172,16 +172,119 @@ select.inp{appearance:none;cursor:pointer}
 #modal-inner{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:480px;margin-top:20px}
 
 /* ── PRINT STYLES ─────────────────────────────────────────────────────── */
-@page { margin: 10mm; }
+@page { margin: 0; size: letter portrait; }
 @media print {
-  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  body{ background:#fff !important; color:#000 !important; font-family:Arial,sans-serif; margin:0; padding:0; }
+  *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body{ margin:0; padding:0; }
 
-  /* Ocultar toda la app */
-  #app,#loader,#toast,#modal{ display:none !important; }
+  #app,#loader,#toast,#modal,#print-area{ display:none !important; }
+
+  /* ── QR: páginas completas con logo ── */
+  #qr-print-area{ display:block !important; margin:0; padding:0; }
+
+  .qr-page{
+    width:215.9mm; height:279.4mm;
+    display:flex !important;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    page-break-after:always;
+    page-break-inside:avoid;
+    margin:0; padding:0;
+    box-sizing:border-box;
+    background:#07091a !important;
+    overflow:hidden;
+  }
+  .qr-page:last-child{ page-break-after:avoid; }
+
+  /* Header navy con separador dorado */
+  .qr-top-bar{
+    width:100%;
+    background:#0c1026 !important;
+    border-bottom:2pt solid #c9a84c !important;
+    padding:9mm 0 7mm;
+    text-align:center;
+    flex-shrink:0;
+    display:flex !important;
+    flex-direction:column;
+    align-items:center;
+    gap:3.5mm;
+  }
+  .qr-logo{
+    width:26mm; height:26mm;
+    display:block;
+    border-radius:50%;
+    object-fit:cover;
+  }
+  .qr-dept{
+    font-family:Georgia,serif;
+    font-size:7.5pt;
+    color:#c9a84c !important;
+    text-transform:uppercase;
+    letter-spacing:.2em;
+    display:block;
+  }
+
+  /* Cuerpo central */
+  .qr-body{
+    flex:1;
+    display:flex !important;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:#07091a !important;
+    width:100%;
+    padding:7mm 0 5mm;
+  }
+
+  /* Marco dorado QR */
+  .qr-frame{
+    border:3pt solid #c9a84c !important;
+    border-radius:5mm;
+    padding:7mm;
+    background:#ffffff !important;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .qr-frame-green{ border-color:#27a85a !important; }
+  .qr-frame img{ width:68mm; height:68mm; display:block; }
+
+  .qr-action{
+    margin-top:7mm; text-align:center; width:100%; padding:0 18mm;
+  }
+  .qr-action-label{
+    font-family:Georgia,serif; font-size:17pt; font-weight:bold;
+    letter-spacing:.05em; text-transform:uppercase; display:block; margin-bottom:4mm;
+  }
+  .qr-label-gold{ color:#c9a84c !important; }
+  .qr-label-green{ color:#27a85a !important; }
+
+  .qr-divider{ height:1pt; width:52mm; margin:4mm auto; }
+  .qr-divider-gold{ background:#c9a84c !important; }
+  .qr-divider-green{ background:#27a85a !important; }
+  .qr-divider-dim{ background:#1c2a50 !important; }
+
+  .qr-action-sub{
+    font-size:9pt; color:#ede0c8 !important;
+    display:block; margin-bottom:3.5mm; line-height:1.5;
+  }
+  .qr-steps{
+    font-size:8pt; color:#8a7f6a !important;
+    line-height:2.1; text-align:center;
+  }
+
+  /* Footer */
+  .qr-bottom-bar{
+    width:100%; background:#0c1026 !important;
+    border-top:1pt solid #1c2a50 !important;
+    padding:4mm 0; text-align:center; flex-shrink:0;
+  }
+  .qr-bottom-bar span{
+    font-size:7pt; color:#7d6225 !important;
+    letter-spacing:.1em; text-transform:uppercase;
+  }
 
   /* ── Reporte tabular ── */
-  #print-area{ display:block !important; padding:0; margin:0; }
+  #print-area.visible{ display:block !important; padding:12px 16px; }
   .pr-header{ text-align:center; border-bottom:2px solid #c9a84c; padding-bottom:10px; margin-bottom:14px; }
   .pr-title{ font-size:18px; font-weight:bold; color:#07091a; }
   .pr-sub{ font-size:11px; color:#555; margin-top:3px; }
@@ -193,29 +296,6 @@ select.inp{appearance:none;cursor:pointer}
   .pr-badge.activo{ background:#fff3cd; color:#856404; }
   .pr-badge.devuelto{ background:#d1e7dd; color:#0a3622; }
   .pr-footer{ margin-top:12px; font-size:8px; color:#888; text-align:right; border-top:1px solid #ddd; padding-top:6px; }
-
-  /* ── QR: 1 por página, centrado, sin encabezados del navegador ── */
-  #qr-print-area{ display:block !important; margin:0; padding:0; }
-  .qr-page{
-    width:100%; height:100vh;
-    display:flex !important;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    page-break-after:always;
-    page-break-inside:avoid;
-    margin:0; padding:0;
-    box-sizing:border-box;
-  }
-  .qr-page:last-child{ page-break-after:avoid; }
-  .qr-page img{ width:80mm; height:80mm; display:block; }
-  .qr-page-label{
-    font-size:26px; font-weight:900; color:#07091a;
-    margin-top:20px; letter-spacing:.06em; text-transform:uppercase;
-    text-align:center;
-  }
-  .qr-page-sub{ font-size:14px; color:#444; margin-top:8px; text-align:center; }
-  .qr-page-hotel{ font-size:11px; color:#999; margin-top:6px; text-align:center; }
 }
 
 /* Hidden print areas (visible only on print) */
@@ -450,20 +530,63 @@ select.inp{appearance:none;cursor:pointer}
 
 <!-- Print: QR codes -->
 <div id="qr-print-area">
-  <!-- Página 1: Solicitar equipo -->
+
+  <!-- ── Página 1: SOLICITAR EQUIPO ── -->
   <div class="qr-page">
-    <img id="qr-sol-print" src="" alt="QR Solicitar Equipo">
-    <div class="qr-page-label">📤 Solicitar Equipo</div>
-    <div class="qr-page-sub">Escanea para registrar un préstamo</div>
-    <div class="qr-page-hotel">Sheraton Chihuahua Soberano — Seguridad</div>
+    <div class="qr-top-bar">
+      <img src="data:image/png;base64,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" class="qr-logo" alt="Sheraton Chihuahua Soberano">
+      <span class="qr-dept">Departamento de Seguridad</span>
+    </div>
+    <div class="qr-body">
+      <div class="qr-frame">
+        <img id="qr-sol-print" src="" alt="QR Solicitar Equipo">
+      </div>
+      <div class="qr-action">
+        <span class="qr-action-label qr-label-gold">&#x2197; SOLICITAR EQUIPO</span>
+        <div class="qr-divider qr-divider-gold"></div>
+        <span class="qr-action-sub">Escanea este código para registrar un préstamo de equipo AV</span>
+        <div class="qr-divider qr-divider-dim"></div>
+        <div class="qr-steps">
+          1&nbsp;&nbsp;Abre la cámara de tu teléfono<br>
+          2&nbsp;&nbsp;Apunta al código QR<br>
+          3&nbsp;&nbsp;Toca la notificación que aparece<br>
+          4&nbsp;&nbsp;Completa el formulario de solicitud
+        </div>
+      </div>
+    </div>
+    <div class="qr-bottom-bar">
+      <span>Control de Préstamo de Equipos &nbsp;·&nbsp; Solo personal autorizado</span>
+    </div>
   </div>
-  <!-- Página 2: Devolver equipo -->
+
+  <!-- ── Página 2: DEVOLVER EQUIPO ── -->
   <div class="qr-page">
-    <img id="qr-ret-print" src="" alt="QR Devolver Equipo">
-    <div class="qr-page-label">📥 Devolver Equipo</div>
-    <div class="qr-page-sub">Escanea para registrar una devolución</div>
-    <div class="qr-page-hotel">Sheraton Chihuahua Soberano — Seguridad</div>
+    <div class="qr-top-bar">
+      <img src="data:image/png;base64,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" class="qr-logo" alt="Sheraton Chihuahua Soberano">
+      <span class="qr-dept">Departamento de Seguridad</span>
+    </div>
+    <div class="qr-body">
+      <div class="qr-frame qr-frame-green">
+        <img id="qr-ret-print" src="" alt="QR Devolver Equipo">
+      </div>
+      <div class="qr-action">
+        <span class="qr-action-label qr-label-green">&#x2198; DEVOLVER EQUIPO</span>
+        <div class="qr-divider qr-divider-green"></div>
+        <span class="qr-action-sub">Escanea este código para registrar la devolución del equipo prestado</span>
+        <div class="qr-divider qr-divider-dim"></div>
+        <div class="qr-steps">
+          1&nbsp;&nbsp;Abre la cámara de tu teléfono<br>
+          2&nbsp;&nbsp;Apunta al código QR<br>
+          3&nbsp;&nbsp;Toca la notificación que aparece<br>
+          4&nbsp;&nbsp;Selecciona tu folio y confirma la entrega
+        </div>
+      </div>
+    </div>
+    <div class="qr-bottom-bar">
+      <span>Control de Préstamo de Equipos &nbsp;·&nbsp; Solo personal autorizado</span>
+    </div>
   </div>
+
 </div>
 
 <div id="loader"><div class="spin" style="font-size:28px">⏳</div><div id="ld-txt">Conectando…</div></div>
@@ -1027,12 +1150,19 @@ function printReport(){
   }).join('');
 
   document.getElementById('pr-footer').textContent =
-    `Total: ${dashData.length} registros · Activos: ${dashData.filter(l=>l.estado==='activo').length} · Devueltos: ${dashData.filter(l=>l.estado==='devuelto').length} · Generado por Sistema de Control de Equipos v3.1`;
+    `Total: ${dashData.length} registros · Activos: ${dashData.filter(l=>l.estado==='activo').length} · Devueltos: ${dashData.filter(l=>l.estado==='devuelto').length} · Sistema de Control de Equipos v3.1`;
 
-  // Ocultar área QR al imprimir reporte
-  document.getElementById('qr-print-area').style.display='none';
-  document.getElementById('print-area').style.display='block';
-  setTimeout(()=>{ window.print(); document.getElementById('print-area').style.display='none'; },300);
+  // Mostrar solo el reporte, ocultar QR
+  const pa = document.getElementById('print-area');
+  const qa = document.getElementById('qr-print-area');
+  qa.style.display = 'none';
+  pa.classList.add('visible');
+  pa.style.display = 'block';
+  setTimeout(()=>{
+    window.print();
+    pa.style.display = 'none';
+    pa.classList.remove('visible');
+  }, 300);
 }
 
 // ── Print QR ──────────────────────────────────────────────────────────────
@@ -1041,27 +1171,32 @@ function printQR(){
   const solImg = document.getElementById('qr-sol-print');
   const retImg = document.getElementById('qr-ret-print');
 
-  // QR grande (300px) sobre fondo blanco, máximo contraste para impresión
-  solImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
-  retImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
+  // Negro puro sobre blanco — máximo contraste para impresión
+  solImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
+  retImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
 
-  // Esperar a que carguen ambas imágenes antes de imprimir
+  // Ocultar reporte, mostrar solo QR
+  document.getElementById('print-area').style.display = 'none';
+  document.getElementById('print-area').classList.remove('visible');
+
   let loaded = 0;
   const onLoad = () => {
     loaded++;
-    if (loaded < 2) return;
-    document.getElementById('print-area').style.display = 'none';
+    if(loaded < 2) return;
     document.getElementById('qr-print-area').style.display = 'block';
-    setTimeout(() => {
+    setTimeout(()=>{
       window.print();
       document.getElementById('qr-print-area').style.display = 'none';
-    }, 300);
+    }, 400);
   };
+  // Resetear handlers
   solImg.onload = onLoad;
   retImg.onload = onLoad;
-  // Fallback si ya estaban en caché
-  if (solImg.complete) onLoad();
-  if (retImg.complete) onLoad();
+  solImg.onerror = onLoad; // fallback si falla la carga
+  retImg.onerror = onLoad;
+  // Si ya estaban cargadas en caché
+  if(solImg.complete && solImg.naturalWidth) onLoad();
+  if(retImg.complete && retImg.naturalWidth) onLoad();
 }
 
 // ── 2FA Setup ─────────────────────────────────────────────────────────────
