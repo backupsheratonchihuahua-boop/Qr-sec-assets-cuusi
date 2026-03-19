@@ -10,17 +10,13 @@
 <meta name="theme-color" content="#07091a">
 <title>Sheraton CHH — Control de Equipos</title>
 
-<!-- ╔══════════════════════════════════════════════════════╗
-     ║  ⚙️  CONFIGURACIÓN — edita solo esta sección       ║
-     ╚══════════════════════════════════════════════════════╝ -->
 <script>
 const _CFG = {
   SCRIPT_URL : 'https://script.google.com/macros/s/AKfycbxW8AM6MDa2bL-AJrR135V82GT4CUknSLg0xfM7PPM4y0JalrkjJwQCetJweDOQQ_2U/exec',
   API_KEY    : '203236923d60463d8f478a9269c180e55f706c87ced546909b442a129e4a2db8',
-  APP_VERSION: '3.0',
+  APP_VERSION: '3.1',
 };
 </script>
-<!-- ── FIN DE CONFIGURACIÓN ─────────────────────────────── -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
@@ -69,18 +65,17 @@ input,select,button,textarea{font-family:'DM Sans',sans-serif}
 .inp-pin{text-align:center;font-size:24px;letter-spacing:.4em}
 select.inp{appearance:none;cursor:pointer}
 
-/* Kit display box */
+/* Kit box */
 .kit-box{background:var(--surf);border:1px solid var(--goldD);border-radius:8px;padding:14px 16px;margin-bottom:14px}
 .kit-box-title{font-size:10px;color:var(--goldD);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:8px}
 .kit-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border)}
-.kit-item:last-child{border-bottom:none;padding-bottom:0}
-.kit-icon{font-size:16px;flex-shrink:0}
+.kit-item:last-child{border-bottom:none}
 
 /* Apuntador toggle */
 .apu-toggle{background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;margin-bottom:14px;user-select:none}
 .apu-toggle:hover{border-color:var(--goldD)}
 .apu-toggle.on{border-color:var(--gold);background:rgba(201,168,76,.08)}
-.apu-check{width:22px;height:22px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;background:transparent}
+.apu-check{width:22px;height:22px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
 .apu-toggle.on .apu-check{border-color:var(--gold);background:var(--gold);color:var(--bg)}
 .apu-info{flex:1}
 .apu-name{font-size:13px;font-weight:600;color:var(--text)}
@@ -109,7 +104,7 @@ select.inp{appearance:none;cursor:pointer}
 .alert-amber{background:var(--amberbg);border:1px solid rgba(230,126,34,.4);color:var(--amber)}
 .alert-blue{background:var(--bluebg);border:1px solid rgba(90,138,224,.4);color:var(--blue)}
 
-/* Stat row */
+/* Stats */
 .stat-row{display:flex;gap:8px;margin-bottom:14px}
 .stat-box{background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;flex:1}
 .sv{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700}
@@ -120,13 +115,13 @@ select.inp{appearance:none;cursor:pointer}
 
 /* Loan card */
 .lc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:10px;border-left:4px solid var(--amber)}
-.lc.devuelto{border-left-color:var(--green)}.lc.activo{border-left-color:var(--amber)}
+.lc.devuelto{border-left-color:var(--green)}
 .lc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:6px;flex-wrap:wrap}
 .lc-eq{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600}
 .lc-sal{font-size:11px;color:var(--dim);margin-top:2px}
 .lc-data{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:11px}
 
-/* Active select list */
+/* Active select */
 .asel{width:100%;background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:7px;padding:11px 13px;text-align:left;cursor:pointer;margin-bottom:7px;transition:all .2s}
 .asel:hover{border-color:var(--gold)}
 
@@ -163,6 +158,10 @@ select.inp{appearance:none;cursor:pointer}
 .filter-panel{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px}
 .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
+/* Sync indicator */
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:pulse 2s infinite}
+.sync-dot.syncing{background:var(--amber)}
+
 /* Toast / Loader */
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:8px;font-weight:500;font-size:13px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.7);animation:fadeIn .3s ease;max-width:92vw;text-align:center;display:none;color:#fff}
 #loader{position:fixed;inset:0;background:rgba(7,9,26,.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:9000}
@@ -171,6 +170,36 @@ select.inp{appearance:none;cursor:pointer}
 /* Modal */
 #modal{position:fixed;inset:0;background:rgba(7,9,26,.9);display:none;align-items:flex-start;justify-content:center;z-index:8000;padding:20px;overflow-y:auto}
 #modal-inner{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:480px;margin-top:20px}
+
+/* ── PRINT STYLES ─────────────────────────────────────────────────────── */
+@media print {
+  body{background:#fff !important;color:#000 !important;font-family:Arial,sans-serif}
+  #app,.hdr,.steps,#loader,#toast,#modal,.hbtn-main,.hbtn-sec,.hbtn-adm,.btn,
+  .filter-panel,#gate-2fa,#panel-setup2fa,.no-print{display:none !important}
+  .print-only{display:block !important}
+  #print-area{display:block !important;padding:0;margin:0}
+  .pr-header{text-align:center;border-bottom:2px solid #c9a84c;padding-bottom:10px;margin-bottom:16px}
+  .pr-title{font-size:20px;font-weight:bold;color:#07091a}
+  .pr-sub{font-size:12px;color:#555;margin-top:4px}
+  .pr-table{width:100%;border-collapse:collapse;font-size:10px;margin-top:10px}
+  .pr-table th{background:#c9a84c;color:#07091a;padding:6px 8px;text-align:left;font-weight:bold}
+  .pr-table td{padding:5px 8px;border-bottom:1px solid #ddd;vertical-align:top}
+  .pr-table tr:nth-child(even) td{background:#f9f9f9}
+  .pr-badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold}
+  .pr-badge.activo{background:#fff3cd;color:#856404}
+  .pr-badge.devuelto{background:#d1e7dd;color:#0a3622}
+  .pr-footer{margin-top:16px;font-size:9px;color:#888;text-align:right;border-top:1px solid #ddd;padding-top:8px}
+  /* QR print */
+  #qr-print-area{display:block !important;padding:20px}
+  .qr-print-card{display:inline-block;border:2px solid #c9a84c;border-radius:10px;padding:20px;text-align:center;margin:10px;vertical-align:top}
+  .qr-print-label{font-size:14px;font-weight:bold;margin-top:8px;color:#07091a}
+  .qr-print-sub{font-size:11px;color:#555;margin-top:4px}
+  .qr-print-hotel{font-size:13px;font-weight:bold;color:#c9a84c;margin-bottom:14px}
+}
+
+/* Hidden print areas (visible only on print) */
+#print-area{display:none}
+#qr-print-area{display:none}
 
 @media(max-width:400px){.lc-data,.filter-grid{grid-template-columns:1fr}}
 </style>
@@ -183,6 +212,9 @@ select.inp{appearance:none;cursor:pointer}
     <button class="hdr-back" id="hdr-back" onclick="goBack()" style="display:none">←</button>
     <div><div class="hdr-sub">Sheraton Chihuahua Soberano</div><div class="hdr-main" id="hdr-title"></div></div>
     <div style="flex:1"></div>
+    <span id="sync-indicator" style="font-size:10px;color:var(--dim);display:flex;align-items:center">
+      <span class="sync-dot" id="sync-dot"></span><span id="sync-txt">Sync</span>
+    </span>
   </div>
 
   <!-- STEPS -->
@@ -202,7 +234,10 @@ select.inp{appearance:none;cursor:pointer}
     <div style="padding:16px 14px">
       <div class="stat-row" id="home-stats"></div>
       <div class="card" style="margin-bottom:14px">
-        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;font-weight:700">Códigos QR — Escritorio de Seguridad</div>
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;font-weight:700">
+          Códigos QR — Escritorio de Seguridad
+          <button onclick="printQR()" class="btn btn-outline btn-sm no-print" style="float:right;margin-top:-4px;font-size:10px;padding:4px 10px">🖨 Imprimir QR</button>
+        </div>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap" id="qr-wrap"></div>
         <div style="font-size:10px;color:var(--dim);text-align:center;margin-top:10px;line-height:1.6">Imprime y coloca en el escritorio de seguridad.<br>El personal escanea para gestionar préstamos.</div>
       </div>
@@ -213,31 +248,23 @@ select.inp{appearance:none;cursor:pointer}
     </div>
   </div>
 
-  <!-- ═══ SOLICITUD S1 ═══ -->
+  <!-- ═══ SOL 1 ═══ -->
   <div id="v-sol1" class="view">
     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Selección de Equipo</div>
-    <div style="font-size:11px;color:var(--dim);margin-bottom:16px">Selecciona el salón y, si aplica, la zona.</div>
-
+    <div style="font-size:11px;color:var(--dim);margin-bottom:16px">Selecciona el salón y zona.</div>
     <div class="field">
       <label>Salón <span class="req">*</span></label>
       <select class="inp" id="sel-salon" onchange="onSalon()">
         <option value="">— Selecciona el salón —</option>
-        <option>Salón Diamante</option>
-        <option>Salón Rubí</option>
-        <option>Salón Esmeralda</option>
-        <option>Salón Zafiro</option>
+        <option>Salón Diamante</option><option>Salón Rubí</option>
+        <option>Salón Esmeralda</option><option>Salón Zafiro</option>
       </select>
     </div>
-
     <div id="zona-f" style="display:none" class="field">
       <label>Zona <span class="req">*</span></label>
       <div class="chips chips2" id="zona-c"></div>
     </div>
-
-    <!-- Kit display — se actualiza dinámicamente -->
     <div id="kit-display" style="display:none"></div>
-
-    <!-- Apuntador toggle — solo para salones con apuntador -->
     <div id="apu-f" style="display:none">
       <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;font-weight:600">Equipo adicional</div>
       <div class="apu-toggle" id="apu-toggle" onclick="toggleApu()">
@@ -248,53 +275,32 @@ select.inp{appearance:none;cursor:pointer}
         </div>
       </div>
     </div>
-
     <div id="avail-err" class="alert alert-red" style="display:none"></div>
     <button class="btn btn-gold btn-full" onclick="step(2)" style="margin-top:4px">Continuar →</button>
   </div>
 
-  <!-- ═══ SOLICITUD S2 ═══ -->
+  <!-- ═══ SOL 2 ═══ -->
   <div id="v-sol2" class="view">
     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Datos del Evento y Empleado</div>
     <div style="font-size:11px;color:var(--dim);margin-bottom:14px">El empleado que solicita el equipo llena estos datos.</div>
-
     <div class="card card-s" id="s2-sum" style="margin-bottom:14px;padding:10px 13px"></div>
-
-    <div class="field">
-      <label>Nombre del evento <span class="req">*</span></label>
-      <input class="inp" id="i-evento" type="text" placeholder="Ej. Boda García-Martínez, Congreso IMSS 2025…" autocomplete="off">
-    </div>
-    <div class="field">
-      <label>Nombre completo del empleado <span class="req">*</span></label>
-      <input class="inp" id="i-empleado" type="text" placeholder="Ej. Juan Pérez García" autocomplete="off">
-    </div>
-    <div class="field">
-      <label>No. Empleado / Tarjeta <span class="req">*</span></label>
-      <input class="inp" id="i-numemp" type="text" placeholder="Ej. 10842" autocomplete="off">
-    </div>
-    <div class="field">
-      <label>Departamento <span class="req">*</span></label>
-      <div class="chips chips2" id="depto-c"></div>
-    </div>
-
+    <div class="field"><label>Nombre del evento <span class="req">*</span></label><input class="inp" id="i-evento" type="text" placeholder="Ej. Boda García-Martínez, Congreso IMSS 2025…" autocomplete="off"></div>
+    <div class="field"><label>Nombre completo del empleado <span class="req">*</span></label><input class="inp" id="i-empleado" type="text" placeholder="Ej. Juan Pérez García" autocomplete="off"></div>
+    <div class="field"><label>No. Empleado / Tarjeta <span class="req">*</span></label><input class="inp" id="i-numemp" type="text" placeholder="Ej. 10842" autocomplete="off"></div>
+    <div class="field"><label>Departamento <span class="req">*</span></label><div class="chips chips2" id="depto-c"></div></div>
     <div class="btn-row">
       <button class="btn btn-outline" onclick="step(1)">← Atrás</button>
       <button class="btn btn-gold btn-main" onclick="step(3)">Continuar →</button>
     </div>
   </div>
 
-  <!-- ═══ SOLICITUD S3 ═══ -->
+  <!-- ═══ SOL 3 ═══ -->
   <div id="v-sol3" class="view">
     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Confirmación del Guardia</div>
     <div style="font-size:11px;color:var(--dim);margin-bottom:14px">El guardia registra su nombre al entregar el equipo físicamente.</div>
     <div class="card card-s" id="s3-sum" style="margin-bottom:14px"></div>
-    <div class="field">
-      <label>Guardia que entrega el equipo <span class="req">*</span></label>
-      <input class="inp" id="i-guardia" type="text" placeholder="Nombre completo del guardia" autocomplete="off">
-    </div>
-    <div class="alert alert-red">
-      ⚠ <strong>Responsabilidad:</strong> El empleado asume plena responsabilidad del equipo hasta devolverlo personalmente al Departamento de Seguridad, independientemente de la duración del evento.
-    </div>
+    <div class="field"><label>Guardia que entrega el equipo <span class="req">*</span></label><input class="inp" id="i-guardia" type="text" placeholder="Nombre completo del guardia" autocomplete="off"></div>
+    <div class="alert alert-red">⚠ <strong>Responsabilidad:</strong> El empleado asume plena responsabilidad del equipo hasta devolverlo personalmente al Departamento de Seguridad, independientemente de la duración del evento.</div>
     <div class="btn-row">
       <button class="btn btn-outline" onclick="step(2)">← Atrás</button>
       <button class="btn btn-gold btn-main" onclick="submitSolicitud()">✓ Confirmar Préstamo</button>
@@ -308,9 +314,7 @@ select.inp{appearance:none;cursor:pointer}
     <div style="font-size:12px;color:var(--dim);margin-bottom:18px">Guarda el folio para registrar la devolución.</div>
     <div class="folio-box" id="cf-folio"></div>
     <div class="card" id="cf-detail" style="text-align:left;margin-bottom:14px"></div>
-    <div class="alert alert-amber" style="text-align:left">
-      📋 El empleado es responsable del equipo hasta entregarlo de regreso al Depto. de Seguridad. Sin importar la duración del evento, el regreso debe ser registrado con este folio.
-    </div>
+    <div class="alert alert-amber" style="text-align:left">📋 El empleado es responsable del equipo hasta entregarlo de regreso al Depto. de Seguridad.</div>
     <button class="btn btn-gold btn-full" onclick="nav('sol1')" style="margin-bottom:8px">+ Nuevo Préstamo</button>
     <button class="btn btn-outline btn-full" onclick="nav('home')">← Inicio</button>
   </div>
@@ -338,28 +342,22 @@ select.inp{appearance:none;cursor:pointer}
 
   <!-- ═══ DASHBOARD ═══ -->
   <div id="v-dashboard" class="view">
-
-    <!-- 2FA Gate -->
     <div id="gate-2fa" style="max-width:340px;margin:24px auto;text-align:center">
       <div style="font-size:40px;margin-bottom:10px">🔐</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;margin-bottom:4px">Acceso Protegido — 2FA</div>
-      <div style="font-size:12px;color:var(--dim);margin-bottom:18px">Se requiere código de Google Authenticator para acceder al historial y modificaciones.</div>
-      <div class="field">
-        <label>Código de 6 dígitos</label>
+      <div style="font-size:12px;color:var(--dim);margin-bottom:18px">Se requiere código de Google Authenticator.</div>
+      <div class="field"><label>Código de 6 dígitos</label>
         <input class="inp inp-pin" id="i-2fa" type="tel" maxlength="6" placeholder="• • • • • •"
                inputmode="numeric" onkeydown="if(event.key==='Enter')verify2FA()"
                oninput="this.value=this.value.replace(/\D/g,'')">
       </div>
       <div id="fa-err" class="alert alert-red" style="display:none">⚠ Código incorrecto o expirado.</div>
       <button class="btn btn-gold btn-full" onclick="verify2FA()">Verificar y Acceder</button>
-      <div style="font-size:10px;color:var(--dim);margin-top:14px;line-height:1.5">Abre <strong style="color:var(--gold)">Google Authenticator</strong> y usa el código de <strong style="color:var(--gold)">SheratonCHH</strong></div>
+      <div style="font-size:10px;color:var(--dim);margin-top:14px;line-height:1.5">Abre <strong style="color:var(--gold)">Google Authenticator</strong> → código <strong style="color:var(--gold)">SheratonCHH</strong></div>
     </div>
 
-    <!-- Dashboard Content -->
     <div id="dash" style="display:none">
       <div class="stat-row" id="dash-stats"></div>
-
-      <!-- Filtros -->
       <div class="filter-panel">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:12px">Filtros de búsqueda</div>
         <div class="filter-grid">
@@ -374,14 +372,14 @@ select.inp{appearance:none;cursor:pointer}
           <div class="field" style="margin-bottom:8px"><label>Salón</label>
             <select class="inp" id="f-salon"><option value="">Todos</option><option>Salón Diamante</option><option>Salón Rubí</option><option>Salón Esmeralda</option><option>Salón Zafiro</option></select>
           </div>
-          <div class="field" style="margin-bottom:8px"><label>Estado equipo</label>
+          <div class="field" style="margin-bottom:8px"><label>Apuntador</label>
             <select class="inp" id="f-apu"><option value="">Todos</option><option value="si">Con apuntador</option><option value="no">Sin apuntador</option></select>
           </div>
         </div>
         <div class="field" style="margin-bottom:8px"><label>Nombre del evento</label><input class="inp" id="f-evento" type="text" placeholder="Buscar por evento…"></div>
-        <div class="field" style="margin-bottom:8px"><label>Empleado (nombre)</label><input class="inp" id="f-emp" type="text" placeholder="Buscar por nombre…"></div>
+        <div class="field" style="margin-bottom:8px"><label>Empleado</label><input class="inp" id="f-emp" type="text" placeholder="Buscar por nombre…"></div>
         <div style="display:flex;gap:8px;margin-top:4px">
-          <button class="btn btn-gold btn-sm" style="flex:1" onclick="applyFilters()">🔍 Aplicar Filtros</button>
+          <button class="btn btn-gold btn-sm" style="flex:1" onclick="applyFilters()">🔍 Aplicar</button>
           <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Limpiar</button>
         </div>
       </div>
@@ -390,11 +388,11 @@ select.inp{appearance:none;cursor:pointer}
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
         <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 Exportar Excel</button>
+        <button class="btn btn-outline btn-sm" onclick="printReport()">🖨 Imprimir Reporte</button>
         <button class="btn btn-outline btn-sm" onclick="reloadDash()">↺ Actualizar</button>
-        <button class="btn btn-outline btn-sm" style="color:var(--blue);border-color:rgba(90,138,224,.4)" onclick="showSetup2fa()">🔑 Configurar 2FA</button>
+        <button class="btn btn-outline btn-sm" style="color:var(--blue);border-color:rgba(90,138,224,.4)" onclick="showSetup2fa()">🔑 Config 2FA</button>
       </div>
 
-      <!-- Setup 2FA panel -->
       <div id="panel-setup2fa" class="card" style="display:none;margin-top:14px;text-align:center">
         <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-weight:700">Configurar Google Authenticator</div>
         <div id="qr-2fa"></div>
@@ -407,10 +405,50 @@ select.inp{appearance:none;cursor:pointer}
 
 </div><!-- #app -->
 
+<!-- Print: Reporte -->
+<div id="print-area">
+  <div class="pr-header">
+    <div class="pr-title">🏨 Sheraton Chihuahua Soberano</div>
+    <div class="pr-sub">Reporte de Préstamo de Equipos — Departamento de Seguridad</div>
+    <div class="pr-sub" id="pr-fecha"></div>
+  </div>
+  <div id="pr-filters-summary" style="font-size:10px;margin-bottom:8px;color:#555"></div>
+  <table class="pr-table" id="pr-table">
+    <thead>
+      <tr>
+        <th>Folio</th><th>Salón / Zona</th><th>Evento</th><th>Kit</th>
+        <th>Apu.</th><th>Empleado</th><th>No.Emp</th><th>Depto.</th>
+        <th>Guardia Sal.</th><th>Fecha Salida</th><th>Estado</th>
+        <th>Fecha Regreso</th><th>Guardia Reg.</th>
+      </tr>
+    </thead>
+    <tbody id="pr-body"></tbody>
+  </table>
+  <div class="pr-footer" id="pr-footer"></div>
+</div>
+
+<!-- Print: QR codes -->
+<div id="qr-print-area">
+  <div style="text-align:center;margin-bottom:20px">
+    <div class="qr-print-hotel">🏨 Sheraton Chihuahua Soberano — Departamento de Seguridad</div>
+  </div>
+  <div style="text-align:center">
+    <div class="qr-print-card">
+      <img id="qr-sol-print" src="" width="200" height="200" alt="QR Solicitud">
+      <div class="qr-print-label">📤 SOLICITAR EQUIPO</div>
+      <div class="qr-print-sub">Escanea para registrar préstamo</div>
+    </div>
+    <div class="qr-print-card">
+      <img id="qr-ret-print" src="" width="200" height="200" alt="QR Regreso">
+      <div class="qr-print-label">📥 DEVOLVER EQUIPO</div>
+      <div class="qr-print-sub">Escanea para registrar devolución</div>
+    </div>
+  </div>
+</div>
+
 <div id="loader"><div class="spin" style="font-size:28px">⏳</div><div id="ld-txt">Conectando…</div></div>
 <div id="toast"></div>
 
-<!-- Edit Modal -->
 <div id="modal">
   <div id="modal-inner">
     <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;margin-bottom:14px">Editar Registro</div>
@@ -425,65 +463,48 @@ select.inp{appearance:none;cursor:pointer}
 <script>
 'use strict';
 
-/* ── Config ──────────────────────────────────────────────────────────────── */
 const SCRIPT_URL = _CFG.SCRIPT_URL;
 const API_KEY    = _CFG.API_KEY;
 
-/* ── Equipment catalog ───────────────────────────────────────────────────── */
 const SALONES = {
-  'Salón Diamante': {
-    zonas       : ['A1','B','B1','C'],
-    kit         : 'Kit de proyección — Control de pantalla + Control de proyector',
-    kitIconos   : ['🖥️','📽️'],
-    hasApuntador: true,
-  },
-  'Salón Rubí': {
-    zonas       : null,
-    kit         : 'Kit de proyección — Control de pantalla + Control de proyector',
-    kitIconos   : ['🖥️','📽️'],
-    hasApuntador: true,
-  },
-  'Salón Esmeralda': {
-    zonas       : null,
-    kit         : 'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico',
-    kitIconos   : ['📽️','📡'],
-    hasApuntador: false,
-  },
-  'Salón Zafiro': {
-    zonas       : null,
-    kit         : 'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico',
-    kitIconos   : ['📽️','📡'],
-    hasApuntador: false,
-  },
+  'Salón Diamante':  { zonas:['A1','B','B1','C'], kit:'Kit de proyección — Control de pantalla + Control de proyector', kitIconos:['🖥️','📽️'], hasApuntador:true },
+  'Salón Rubí':      { zonas:null,                kit:'Kit de proyección — Control de pantalla + Control de proyector', kitIconos:['🖥️','📽️'], hasApuntador:true },
+  'Salón Esmeralda': { zonas:null,                kit:'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico', kitIconos:['📽️','📡'], hasApuntador:false },
+  'Salón Zafiro':    { zonas:null,                kit:'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico', kitIconos:['📽️','📡'], hasApuntador:false },
 };
 const KIT_ITEMS = {
   'Kit de proyección — Control de pantalla + Control de proyector': ['Control de pantalla de proyección','Control de proyector'],
   'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico': ['Control de proyector','Dispositivo de proyección inalámbrico'],
 };
 const DEPTOS = ['Mantenimiento','Banquetes','Ventas','Sistemas'];
-const SK     = 'shr_loans_v3';
-const SK_SES = 'shr_sess_v3';
+const SK     = 'shr_loans_v31';
+const SK_SES = 'shr_sess_v31';
 
-/* ── State ───────────────────────────────────────────────────────────────── */
 let loans        = [];
 let sessionToken = sessionStorage.getItem(SK_SES) || null;
 let curView      = 'home';
 let dashData     = [];
 let editingId    = null;
-
-// Form
-let fSalon='', fZona='', fKit='', fApu=false, fEvento='', fEmpleado='', fNumEmp='', fDepto='', fGuardia='';
-// Regreso
+let fSalon='',fZona='',fKit='',fApu=false,fEvento='',fEmpleado='',fNumEmp='',fDepto='',fGuardia='';
 let rFound = null;
+let _autoRefresh;
 
-/* ── Helpers ─────────────────────────────────────────────────────────────── */
 const fmt  = ts => new Date(ts).toLocaleString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 const esc  = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const actives  = () => loans.filter(l => l.estado === 'activo');
 const lsave    = () => { try{ localStorage.setItem(SK, JSON.stringify(loans)); }catch(_){} };
 const lload    = () => { try{ const d=localStorage.getItem(SK); if(d) loans=JSON.parse(d); }catch(_){} };
 
-/* ── API ─────────────────────────────────────────────────────────────────── */
+// ── Sync indicator ────────────────────────────────────────────────────────
+function setSyncing(on) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-txt');
+  if (!dot) return;
+  dot.className = 'sync-dot' + (on ? ' syncing' : '');
+  txt.textContent = on ? 'Sincronizando…' : 'Sincronizado';
+}
+
+// ── API ───────────────────────────────────────────────────────────────────
 async function api(action, extra={}) {
   const body = { action, apiKey: API_KEY, sessionToken, ...extra };
   const res  = await fetch(SCRIPT_URL, {
@@ -497,11 +518,28 @@ async function api(action, extra={}) {
   return json;
 }
 
-/* ── UI helpers ──────────────────────────────────────────────────────────── */
+// ── Fetch fresco desde servidor y actualiza UI inmediatamente ─────────────
+async function syncNow(silent) {
+  setSyncing(true);
+  try {
+    const r = await api('getLoans');
+    loans = r.loans || [];
+    lsave();
+    renderHome();
+    if (curView === 'regreso') renderRegreso();
+  } catch(_) {
+    if (!silent) toast('Sin conexión — datos locales', 'warn');
+    lload();
+  }
+  setSyncing(false);
+}
+
+// ── Loader ────────────────────────────────────────────────────────────────
 let _ldrT;
 function loading(msg) { clearTimeout(_ldrT); document.getElementById('ld-txt').textContent=msg||'Procesando…'; document.getElementById('loader').style.display='flex'; }
 function doneLoading(){ _ldrT=setTimeout(()=>{ document.getElementById('loader').style.display='none'; },200); }
 
+// ── Toast ─────────────────────────────────────────────────────────────────
 let _tT;
 function toast(msg, type='ok') {
   const el=document.getElementById('toast');
@@ -511,26 +549,21 @@ function toast(msg, type='ok') {
   clearTimeout(_tT); _tT=setTimeout(()=>{ el.style.display='none'; },5000);
 }
 
-/* ── Navigation ──────────────────────────────────────────────────────────── */
-const TITLES = {
-  home:'Control de Equipos', sol1:'Solicitud de Equipo', sol2:'Solicitud de Equipo',
-  sol3:'Solicitud de Equipo', confirmacion:'Préstamo Registrado',
-  regreso:'Registro de Regreso', dashboard:'Panel de Seguridad'
-};
-const BACKS = {
-  sol1:'home', sol2:'sol1', sol3:'sol2',
-  confirmacion:'home', regreso:'home', dashboard:'home'
-};
+// ── Navigation ────────────────────────────────────────────────────────────
+const TITLES = { home:'Control de Equipos', sol1:'Solicitud de Equipo', sol2:'Solicitud de Equipo', sol3:'Solicitud de Equipo', confirmacion:'Préstamo Registrado', regreso:'Registro de Regreso', dashboard:'Panel de Seguridad' };
+const BACKS  = { sol1:'home', sol2:'sol1', sol3:'sol2', confirmacion:'home', regreso:'home', dashboard:'home' };
 
 function showView(id) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const el=document.getElementById('v-'+id);
   if(el){ el.classList.add('active'); el.classList.add('anim'); }
   curView=id;
-  document.getElementById('hdr').style.display      = id==='home'?'none':'flex';
+  const isHome=id==='home';
+  document.getElementById('hdr').style.display      = isHome?'none':'flex';
   document.getElementById('steps').style.display    = ['sol1','sol2','sol3'].includes(id)?'flex':'none';
   document.getElementById('hdr-back').style.display = BACKS[id]?'block':'none';
   document.getElementById('hdr-title').textContent  = TITLES[id]||'';
+  document.getElementById('sync-indicator').style.display = isHome?'none':'flex';
   window.scrollTo(0,0);
 }
 
@@ -538,9 +571,9 @@ function nav(id) {
   if(id==='sol1')      { resetForm(); updateStepUI(1); showView('sol1'); return; }
   if(id==='regreso')   { rFound=null; showView('regreso'); setTimeout(renderRegreso,50); return; }
   if(id==='dashboard') {
-    const hasSess = !!sessionToken;
-    document.getElementById('gate-2fa').style.display = hasSess?'none':'block';
-    document.getElementById('dash').style.display     = hasSess?'block':'none';
+    const hasSess=!!sessionToken;
+    document.getElementById('gate-2fa').style.display=hasSess?'none':'block';
+    document.getElementById('dash').style.display=hasSess?'block':'none';
     document.getElementById('i-2fa').value='';
     document.getElementById('fa-err').style.display='none';
     showView('dashboard');
@@ -549,35 +582,18 @@ function nav(id) {
   }
   showView(id);
 }
-
 function goBack() { const b=BACKS[curView]; if(b) nav(b); }
 
-/* ── Load data ───────────────────────────────────────────────────────────── */
-async function loadLoans(silent) {
-  if(!silent) loading('Sincronizando…');
-  try {
-    const r=await api('getLoans');
-    loans=r.loans||[]; lsave();
-  } catch(_) {
-    lload();
-    if(!silent) toast('Sin conexión — datos locales','warn');
-  }
-  doneLoading();
-  renderHome();
-}
-
-/* ── HOME ────────────────────────────────────────────────────────────────── */
+// ── HOME ──────────────────────────────────────────────────────────────────
 function renderHome() {
   const act=actives();
   const today=new Date(); today.setHours(0,0,0,0);
   const retHoy=loans.filter(l=>l.estado==='devuelto'&&l.fechaRegreso>=today);
-
   document.getElementById('home-stats').innerHTML=`
     <div class="stat-box"><div class="sv" style="color:${act.length>0?'var(--amber)':'var(--dim)'}">${act.length}</div><div class="sl2">Activos</div></div>
     <div class="stat-box"><div class="sv" style="color:var(--green)">${retHoy.length}</div><div class="sl2">Dev. Hoy</div></div>
     <div class="stat-box"><div class="sv" style="color:var(--dim)">${loans.length}</div><div class="sl2">Total</div></div>
   `;
-
   const base=window.location.href.replace(/[?#].*/,'');
   document.getElementById('qr-wrap').innerHTML=`
     <div class="qr-wrap">
@@ -591,11 +607,9 @@ function renderHome() {
       <div class="qr-sub">Escanea con la cámara</div>
     </div>
   `;
-
   let html='';
   if(act.length>0){
-    html=`<div class="card" style="padding:12px 14px">
-      <div style="font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">📋 Equipos actualmente prestados (${act.length})</div>`;
+    html=`<div class="card" style="padding:12px 14px"><div style="font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">📋 Equipos actualmente prestados (${act.length})</div>`;
     act.forEach(l=>{
       html+=`<div style="font-size:12px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
         <div style="font-weight:600;color:var(--text)">${esc(l.salon)}${l.zona?' — Zona '+esc(l.zona):''}</div>
@@ -608,18 +622,17 @@ function renderHome() {
   document.getElementById('home-active').innerHTML=html;
 }
 
-/* ── SOLICITUD ───────────────────────────────────────────────────────────── */
+// ── SOLICITUD ─────────────────────────────────────────────────────────────
 function resetForm(){ fSalon=fZona=fKit=fEvento=fEmpleado=fNumEmp=fDepto=fGuardia=''; fApu=false; }
 
 function onSalon(){
   fSalon=document.getElementById('sel-salon').value; fZona=''; fApu=false;
   const s=SALONES[fSalon];
-  document.getElementById('zona-f').style.display    = (s&&s.zonas)?'block':'none';
-  document.getElementById('apu-f').style.display     = (s&&s.hasApuntador)?'block':'none';
-  document.getElementById('avail-err').style.display = 'none';
+  document.getElementById('zona-f').style.display=(s&&s.zonas)?'block':'none';
+  document.getElementById('apu-f').style.display=(s&&s.hasApuntador)?'block':'none';
+  document.getElementById('avail-err').style.display='none';
   if(s&&s.zonas) renderZonaChips();
-  updateApuUI();
-  updateKitDisplay();
+  updateApuUI(); updateKitDisplay();
 }
 
 function renderZonaChips(){
@@ -628,45 +641,30 @@ function renderZonaChips(){
     `<button class="chip${fZona===z?' on':''}" onclick="selZona('${z}')">${z}</button>`
   ).join('');
 }
-
-function selZona(z){
-  fZona=z; renderZonaChips(); checkAvailability();
-}
+function selZona(z){ fZona=z; renderZonaChips(); checkAvail(); }
 
 function updateKitDisplay(){
-  const s=SALONES[fSalon];
-  const el=document.getElementById('kit-display');
+  const s=SALONES[fSalon]; const el=document.getElementById('kit-display');
   if(!s){ el.style.display='none'; return; }
   fKit=s.kit;
   const items=KIT_ITEMS[s.kit]||[];
   el.style.display='block';
-  el.innerHTML=`<div class="kit-box">
-    <div class="kit-box-title">📦 Kit incluido en este préstamo</div>
-    ${items.map((item,i)=>`<div class="kit-item"><span class="kit-icon">${s.kitIconos[i]||'📦'}</span><span>${esc(item)}</span></div>`).join('')}
-  </div>`;
+  el.innerHTML=`<div class="kit-box"><div class="kit-box-title">📦 Kit incluido en este préstamo</div>${items.map((item,i)=>`<div class="kit-item"><span style="font-size:16px;flex-shrink:0">${s.kitIconos[i]||'📦'}</span><span>${esc(item)}</span></div>`).join('')}</div>`;
 }
 
-function toggleApu(){
-  fApu=!fApu; updateApuUI();
-}
-
+function toggleApu(){ fApu=!fApu; updateApuUI(); }
 function updateApuUI(){
-  const t=document.getElementById('apu-toggle');
-  const c=document.getElementById('apu-check');
+  const t=document.getElementById('apu-toggle'); const c=document.getElementById('apu-check');
   if(!t) return;
-  t.classList.toggle('on',fApu);
-  c.textContent=fApu?'✓':'';
+  t.classList.toggle('on',fApu); c.textContent=fApu?'✓':'';
 }
 
-async function checkAvailability(){
-  if(!fSalon) return;
+function checkAvail(){
   document.getElementById('avail-err').style.display='none';
-  // Check local cache first
   const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
   if(busy){
     const zona=busy.zona?' Zona '+busy.zona:'';
-    document.getElementById('avail-err').textContent=
-      `⚠ ${fSalon}${zona} ya tiene equipo prestado — Evento: "${busy.evento||'Sin nombre'}" · ${busy.empleado} · Folio: ${busy.id}`;
+    document.getElementById('avail-err').textContent=`⚠ ${fSalon}${zona} ya tiene equipo prestado — Evento: "${busy.evento||'Sin nombre'}" · ${busy.empleado} · Folio: ${busy.id}`;
     document.getElementById('avail-err').style.display='block';
   }
 }
@@ -691,7 +689,7 @@ function step(to){
     if(!fSalon){ toast('Selecciona el salón.','err'); return; }
     if(fSalon==='Salón Diamante'&&!fZona){ toast('Selecciona la zona del salón.','err'); return; }
     const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
-    if(busy){ toast('⚠ Este equipo ya está prestado. Primero debe devolverse.','err'); return; }
+    if(busy){ toast('⚠ Este equipo ya está prestado. Debe devolverse primero.','err'); return; }
     renderDeptoChips();
     const zona=fSalon==='Salón Diamante'?` — Zona ${fZona}`:'';
     document.getElementById('s2-sum').innerHTML=`
@@ -713,67 +711,38 @@ function step(to){
     if(!fNumEmp){ toast('Ingresa el número de empleado.','err'); return; }
     if(!fDepto){ toast('Selecciona el departamento.','err'); return; }
     const zona=fSalon==='Salón Diamante'?` — Zona ${fZona}`:'';
-    const items=[
-      ['Salón',fSalon+zona],['Evento',fEvento],
-      ['Kit de equipos',fKit],
-      ['Apuntador láser',fApu?'Sí, incluido':'No'],
-      ['Empleado',fEmpleado],['No. Empleado',fNumEmp],['Departamento',fDepto],
-    ];
-    document.getElementById('s3-sum').innerHTML=`
-      <div style="font-size:10px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Resumen del préstamo</div>
-      ${items.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('')}
-    `;
+    const items=[['Salón',fSalon+zona],['Evento',fEvento],['Kit de equipos',fKit],['Apuntador láser',fApu?'Sí, incluido':'No'],['Empleado',fEmpleado],['No. Empleado',fNumEmp],['Departamento',fDepto]];
+    document.getElementById('s3-sum').innerHTML=`<div style="font-size:10px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Resumen del préstamo</div>${items.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('')}`;
     document.getElementById('i-guardia').value=fGuardia;
   }
-  if(to===1){
-    document.getElementById('sel-salon').value=fSalon;
-    onSalon();
-    if(fZona){ setTimeout(()=>{ renderZonaChips(); },50); }
-  }
+  if(to===1){ document.getElementById('sel-salon').value=fSalon; onSalon(); if(fZona) setTimeout(renderZonaChips,50); }
   updateStepUI(to); showView('sol'+to);
 }
 
 async function submitSolicitud(){
   fGuardia=document.getElementById('i-guardia').value.trim();
   if(!fGuardia){ toast('Ingresa el nombre del guardia.','err'); return; }
-
   const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
   if(busy){ toast('⚠ Este equipo ya está en préstamo activo.','err'); return; }
 
   loading('Registrando préstamo…');
   try {
-    const loan={
-      salon:fSalon, zona:fZona||null, kit:fKit, apuntador:fApu,
-      evento:fEvento, empleado:fEmpleado, numeroEmpleado:fNumEmp,
-      departamento:fDepto, personalSeguridad:fGuardia, fechaSalida:Date.now(),
-    };
+    const loan={salon:fSalon,zona:fZona||null,kit:fKit,apuntador:fApu,evento:fEvento,empleado:fEmpleado,numeroEmpleado:fNumEmp,departamento:fDepto,personalSeguridad:fGuardia,fechaSalida:Date.now()};
     const r=await api('addLoan',{loan});
+    // ── Actualización inmediata ───────────────────────────────────────
     loans.unshift(r.loan); lsave();
+    renderHome();
 
-    const cf=r.loan;
-    const zona=cf.zona?` — Zona ${cf.zona}`:'';
-    document.getElementById('cf-folio').innerHTML=`
-      <div class="folio-lbl">Número de Folio</div>
-      <div class="folio-num">${esc(cf.id)}</div>
-      <div style="font-size:10px;color:var(--dim);margin-top:3px">Guarda este folio para registrar la devolución</div>
-    `;
-    const rows=[
-      ['Salón',cf.salon+zona],['Evento',cf.evento],
-      ['Kit de equipos',cf.kit],
-      ['Apuntador',cf.apuntador?'✓ Incluido':'No'],
-      ['Empleado',cf.empleado],['No. Empleado',cf.numeroEmpleado],
-      ['Departamento',cf.departamento],['Guardia (salida)',cf.personalSeguridad],
-      ['Fecha y hora',fmt(cf.fechaSalida)],
-    ];
-    document.getElementById('cf-detail').innerHTML=rows.map(([k,v])=>
-      `<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`
-    ).join('');
+    const cf=r.loan, zona=cf.zona?` — Zona ${cf.zona}`:'';
+    document.getElementById('cf-folio').innerHTML=`<div class="folio-lbl">Número de Folio</div><div class="folio-num">${esc(cf.id)}</div><div style="font-size:10px;color:var(--dim);margin-top:3px">Guarda este folio para la devolución</div>`;
+    const rows=[['Salón',cf.salon+zona],['Evento',cf.evento],['Kit de equipos',cf.kit],['Apuntador',cf.apuntador?'✓ Incluido':'No'],['Empleado',cf.empleado],['No. Empleado',cf.numeroEmpleado],['Departamento',cf.departamento],['Guardia (salida)',cf.personalSeguridad],['Fecha y hora',fmt(cf.fechaSalida)]];
+    document.getElementById('cf-detail').innerHTML=rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('');
     showView('confirmacion');
   } catch(e){ toast('Error: '+e.message,'err'); }
   doneLoading();
 }
 
-/* ── REGRESO ─────────────────────────────────────────────────────────────── */
+// ── REGRESO ───────────────────────────────────────────────────────────────
 function renderRegreso(){
   document.getElementById('ret-err').style.display='none';
   document.getElementById('ret-found').innerHTML='';
@@ -818,21 +787,13 @@ function pickLoan(id){
 function renderRetFound(){
   if(!rFound){ document.getElementById('ret-found').innerHTML=''; return; }
   const l=rFound, zona=l.zona?` — Zona ${l.zona}`:'';
-  const rows=[
-    ['Folio',l.id],['Salón',l.salon+zona],['Evento',l.evento||'Sin nombre'],
-    ['Kit de equipos',l.kit],['Apuntador',l.apuntador?'✓ Incluido':'No'],
-    ['Empleado',l.empleado],['No. Empleado',l.numeroEmpleado],
-    ['Departamento',l.departamento],['Guardia (salida)',l.personalSeguridad],
-    ['Fecha de salida',fmt(l.fechaSalida)],
-  ];
+  const rows=[['Folio',l.id],['Salón',l.salon+zona],['Evento',l.evento||'Sin nombre'],['Kit de equipos',l.kit],['Apuntador',l.apuntador?'✓ Incluido':'No'],['Empleado',l.empleado],['No. Empleado',l.numeroEmpleado],['Departamento',l.departamento],['Guardia (salida)',l.personalSeguridad],['Fecha de salida',fmt(l.fechaSalida)]];
   document.getElementById('ret-found').innerHTML=`
     <div class="card" style="border-left:4px solid var(--green);border-color:rgba(39,168,90,.4);margin-bottom:14px">
       <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700">✓ Préstamo encontrado</div>
       ${rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2" style="color:${k==='Folio'?'var(--gold)':'var(--text)'}">${esc(v)}</span></div>`).join('')}
     </div>
-    <div class="field"><label>Guardia que recibe el equipo <span class="req">*</span></label>
-      <input class="inp" id="i-gret" type="text" placeholder="Nombre completo del guardia" autocomplete="off">
-    </div>
+    <div class="field"><label>Guardia que recibe el equipo <span class="req">*</span></label><input class="inp" id="i-gret" type="text" placeholder="Nombre completo del guardia" autocomplete="off"></div>
     <div id="ret-found-err" class="alert alert-red" style="display:none"></div>
     <div class="alert alert-green">✓ Al confirmar, el préstamo se cerrará y todos los equipos del kit quedarán como devueltos.</div>
     <button class="btn btn-green btn-full" onclick="submitRegreso()">✓ Confirmar Devolución del Equipo</button>
@@ -846,23 +807,24 @@ async function submitRegreso(){
   loading('Registrando devolución…');
   try {
     await api('returnLoan',{id:rFound.id,guardia:g});
+    // ── Actualización inmediata ───────────────────────────────────────
     loans=loans.map(l=>l.id===rFound.id?{...l,estado:'devuelto',fechaRegreso:Date.now(),personalRegreso:g}:l);
     lsave();
+    renderHome();
     toast('✅ Equipo devuelto correctamente. Folio: '+rFound.id);
     rFound=null; showView('regreso'); setTimeout(renderRegreso,50);
   } catch(e){ toast('Error: '+e.message,'err'); }
   doneLoading();
 }
 
-/* ── 2FA ─────────────────────────────────────────────────────────────────── */
+// ── 2FA ───────────────────────────────────────────────────────────────────
 async function verify2FA(){
   const code=(document.getElementById('i-2fa').value||'').trim();
   if(code.length!==6){ document.getElementById('fa-err').style.display='block'; return; }
   loading('Verificando 2FA…');
   try {
     const r=await api('verify2fa',{code});
-    sessionToken=r.sessionToken;
-    sessionStorage.setItem(SK_SES,sessionToken);
+    sessionToken=r.sessionToken; sessionStorage.setItem(SK_SES,sessionToken);
     document.getElementById('gate-2fa').style.display='none';
     document.getElementById('dash').style.display='block';
     document.getElementById('fa-err').style.display='none';
@@ -871,12 +833,15 @@ async function verify2FA(){
   doneLoading();
 }
 
-/* ── DASHBOARD ───────────────────────────────────────────────────────────── */
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
 async function reloadDash(){
   loading('Cargando historial…');
   try {
     const r=await api('getHistory',{filters:getFilters()});
     dashData=r.loans||[];
+    // Sync global también
+    const r2=await api('getLoans');
+    loans=r2.loans||[]; lsave();
   } catch(_){
     dashData=applyLocalFilters(getFilters());
     toast('Sin conexión — datos locales','warn');
@@ -889,8 +854,8 @@ function getFilters(){
   const hasta=document.getElementById('f-hasta').value;
   const apu=document.getElementById('f-apu').value;
   return {
-    desde      : desde ? new Date(desde+'T00:00').getTime() : null,
-    hasta      : hasta ? new Date(hasta+'T23:59').getTime() : null,
+    desde      : desde?new Date(desde+'T00:00').getTime():null,
+    hasta      : hasta?new Date(hasta+'T23:59').getTime():null,
     estado     : document.getElementById('f-estado').value||null,
     departamento:document.getElementById('f-depto').value||null,
     salon      : document.getElementById('f-salon').value||null,
@@ -907,7 +872,7 @@ function applyLocalFilters(f){
     if(f.estado&&l.estado!==f.estado) return false;
     if(f.departamento&&l.departamento!==f.departamento) return false;
     if(f.salon&&l.salon!==f.salon) return false;
-    if(f.evento&&!l.evento.toLowerCase().includes(f.evento.toLowerCase())) return false;
+    if(f.evento&&!(l.evento||'').toLowerCase().includes(f.evento.toLowerCase())) return false;
     if(f.empleado&&!l.empleado.toLowerCase().includes(f.empleado.toLowerCase())) return false;
     if(f.apuntador==='si'&&!l.apuntador) return false;
     if(f.apuntador==='no'&&l.apuntador) return false;
@@ -931,50 +896,33 @@ function renderDash(){
     <div class="stat-box"><div class="sv" style="color:var(--dim)">${loans.length}</div><div class="sl2">Total</div></div>
     <div class="stat-box"><div class="sv" style="color:var(--gold)">${dashData.length}</div><div class="sl2">Filtrados</div></div>
   `;
-
   if(dashData.length===0){
     document.getElementById('dash-list').innerHTML='<div style="text-align:center;padding:30px 0;color:var(--dim);font-size:13px">Sin registros para los filtros seleccionados.</div>';
     return;
   }
-
   document.getElementById('dash-list').innerHTML=dashData.map(l=>{
     const sc=l.estado==='devuelto'?'var(--green)':'var(--amber)';
     const sl=l.estado==='devuelto'?'Devuelto':'Activo';
     const sb=l.estado==='devuelto'?'var(--greenbg)':'var(--amberbg)';
     const zona=l.zona?` — Zona ${l.zona}`:'';
-    const rows=[
-      ['Evento',l.evento||'Sin nombre'],['Kit',l.kit],
-      ['Apuntador',l.apuntador?'✓ Sí':'—'],
-      ['Empleado',l.empleado],['No. Emp.',l.numeroEmpleado],
-      ['Depto.',l.departamento],['Guardia salida',l.personalSeguridad],
-      ['Fecha salida',fmt(l.fechaSalida)],
-      ...(l.fechaRegreso?[['Fecha regreso',fmt(l.fechaRegreso)],['Guardia regreso',l.personalRegreso||'—']]:[]),
-      ['Folio',l.id],
-    ];
+    const rows=[['Evento',l.evento||'Sin nombre'],['Kit',l.kit],['Apuntador',l.apuntador?'✓ Sí':'—'],['Empleado',l.empleado],['No. Emp.',l.numeroEmpleado],['Depto.',l.departamento],['Guardia salida',l.personalSeguridad],['Fecha salida',fmt(l.fechaSalida)],...(l.fechaRegreso?[['Fecha regreso',fmt(l.fechaRegreso)],['Guardia regreso',l.personalRegreso||'—']]:[]),['Folio',l.id]];
     return `<div class="lc ${l.estado}">
       <div class="lc-head">
-        <div>
-          <div class="lc-eq">${esc(l.salon)}${esc(zona)}</div>
-          <div class="lc-sal">🎫 ${esc(l.evento||'Sin nombre de evento')}</div>
-        </div>
+        <div><div class="lc-eq">${esc(l.salon)}${esc(zona)}</div><div class="lc-sal">🎫 ${esc(l.evento||'Sin nombre de evento')}</div></div>
         <span class="badge" style="background:${sb};color:${sc};border:1px solid ${sc}44">${sl}</span>
       </div>
       <div class="lc-data">${rows.map(([k,v])=>`<div><span style="color:var(--dim)">${esc(k)}: </span><span style="color:${k==='Folio'?'var(--gold)':'var(--text)'};${k==='Folio'?'font-weight:700':''}">${esc(v)}</span></div>`).join('')}</div>
-      ${l.estado==='activo'?`<div style="display:flex;gap:7px;margin-top:10px">
-        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="dashReturn('${l.id}')">↩ Regreso</button>
-        <button class="btn btn-outline btn-sm" style="flex:1" onclick="openEdit('${l.id}')">✏ Editar</button>
-      </div>`:''}
+      ${l.estado==='activo'?`<div style="display:flex;gap:7px;margin-top:10px"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="dashReturn('${l.id}')">↩ Regreso</button><button class="btn btn-outline btn-sm" style="flex:1" onclick="openEdit('${l.id}')">✏ Editar</button></div>`:''}
     </div>`;
   }).join('');
 }
 
 function dashReturn(id){
-  rFound=loans.find(l=>l.id===id);
-  nav('regreso');
+  rFound=loans.find(l=>l.id===id); nav('regreso');
   setTimeout(()=>{ document.getElementById('ret-list').innerHTML=''; renderRetFound(); },200);
 }
 
-/* ── Edit Modal ──────────────────────────────────────────────────────────── */
+// ── Edit Modal ────────────────────────────────────────────────────────────
 function openEdit(id){
   const l=loans.find(x=>x.id===id); if(!l) return;
   editingId=id;
@@ -984,30 +932,17 @@ function openEdit(id){
       <div style="font-size:12px;color:var(--dim)">${esc(l.salon)}${l.zona?' — Zona '+l.zona:''} · ${esc(l.evento||'Sin evento')}</div>
     </div>
     ${[['evento','Evento'],['empleado','Empleado'],['numeroEmpleado','No. Empleado'],['departamento','Departamento'],['personalSeguridad','Guardia Salida']].map(([k,lbl])=>`
-      <div class="field"><label>${lbl}</label><input class="inp" id="ed-${k}" value="${esc(l[k]||'')}"></div>
-    `).join('')}
+      <div class="field"><label>${lbl}</label><input class="inp" id="ed-${k}" value="${esc(l[k]||'')}"></div>`).join('')}
     <div class="field"><label>Estado</label>
-      <select class="inp" id="ed-estado">
-        <option value="activo"${l.estado==='activo'?' selected':''}>Activo</option>
-        <option value="devuelto"${l.estado==='devuelto'?' selected':''}>Devuelto</option>
-      </select>
+      <select class="inp" id="ed-estado"><option value="activo"${l.estado==='activo'?' selected':''}>Activo</option><option value="devuelto"${l.estado==='devuelto'?' selected':''}>Devuelto</option></select>
     </div>
   `;
   document.getElementById('modal').style.display='flex';
 }
-
 function closeModal(){ document.getElementById('modal').style.display='none'; editingId=null; }
-
 async function saveEdit(){
   if(!editingId) return;
-  const fields={
-    evento:document.getElementById('ed-evento').value.trim(),
-    empleado:document.getElementById('ed-empleado').value.trim(),
-    numeroEmpleado:document.getElementById('ed-numeroEmpleado').value.trim(),
-    departamento:document.getElementById('ed-departamento').value.trim(),
-    personalSeguridad:document.getElementById('ed-personalSeguridad').value.trim(),
-    estado:document.getElementById('ed-estado').value,
-  };
+  const fields={evento:document.getElementById('ed-evento').value.trim(),empleado:document.getElementById('ed-empleado').value.trim(),numeroEmpleado:document.getElementById('ed-numeroEmpleado').value.trim(),departamento:document.getElementById('ed-departamento').value.trim(),personalSeguridad:document.getElementById('ed-personalSeguridad').value.trim(),estado:document.getElementById('ed-estado').value};
   loading('Guardando cambios…');
   try {
     await api('manualEdit',{id:editingId,fields});
@@ -1018,58 +953,82 @@ async function saveEdit(){
   doneLoading();
 }
 
-/* ── Export Excel ────────────────────────────────────────────────────────── */
+// ── Export Excel ──────────────────────────────────────────────────────────
 function exportExcel(){
   if(!dashData.length){ toast('No hay datos para exportar.','warn'); return; }
-  const headers=['Folio','Salón','Zona','Kit de Equipos','Apuntador','Evento',
-                 'Empleado','No. Empleado','Departamento','Guardia Salida',
-                 'Fecha Salida','Estado','Fecha Regreso','Guardia Regreso'];
-  const rows=dashData.map(l=>[
-    l.id, l.salon, l.zona||'', l.kit,
-    l.apuntador?'Sí':'No', l.evento||'',
-    l.empleado, l.numeroEmpleado, l.departamento,
-    l.personalSeguridad, fmt(l.fechaSalida),
-    l.estado,
-    l.fechaRegreso?fmt(l.fechaRegreso):'',
-    l.personalRegreso||''
-  ]);
-
+  const headers=['Folio','Salón','Zona','Kit de Equipos','Apuntador','Evento','Empleado','No. Empleado','Departamento','Guardia Salida','Fecha Salida','Estado','Fecha Regreso','Guardia Regreso'];
+  const rows=dashData.map(l=>[l.id,l.salon,l.zona||'',l.kit,l.apuntador?'Sí':'No',l.evento||'',l.empleado,l.numeroEmpleado,l.departamento,l.personalSeguridad,fmt(l.fechaSalida),l.estado,l.fechaRegreso?fmt(l.fechaRegreso):'',l.personalRegreso||'']);
   const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
-  ws['!cols']=[{wch:22},{wch:16},{wch:6},{wch:40},{wch:10},{wch:30},
-               {wch:22},{wch:13},{wch:14},{wch:22},{wch:18},{wch:10},{wch:18},{wch:22}];
-
-  // Color header row
-  headers.forEach((_,i)=>{
-    const c=XLSX.utils.encode_cell({r:0,c:i});
-    if(ws[c]) ws[c].s={fill:{fgColor:{rgb:'C9A84C'}},font:{bold:true,color:{rgb:'07091A'}}};
-  });
-
-  // Color status column
-  rows.forEach((r,i)=>{
-    const c=XLSX.utils.encode_cell({r:i+1,c:11});
-    if(ws[c]) ws[c].s={font:{bold:true,color:{rgb:r[11]==='devuelto'?'1A5C2E':'7D5C00'}}};
-  });
-
+  ws['!cols']=[{wch:22},{wch:16},{wch:6},{wch:40},{wch:10},{wch:30},{wch:22},{wch:13},{wch:14},{wch:22},{wch:18},{wch:10},{wch:18},{wch:22}];
+  headers.forEach((_,i)=>{ const c=XLSX.utils.encode_cell({r:0,c:i}); if(ws[c]) ws[c].s={fill:{fgColor:{rgb:'C9A84C'}},font:{bold:true,color:{rgb:'07091A'}}}; });
+  rows.forEach((r,i)=>{ const c=XLSX.utils.encode_cell({r:i+1,c:11}); if(ws[c]) ws[c].s={font:{bold:true,color:{rgb:r[11]==='devuelto'?'1A5C2E':'7D5C00'}}}; });
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Prestamos',ws);
-
-  // Resumen sheet
-  const today=new Date(); today.setHours(0,0,0,0);
-  const ws2=XLSX.utils.aoa_to_sheet([
-    ['RESUMEN DE EXPORTACIÓN'],
-    ['Fecha',new Date().toLocaleString('es-MX')],
-    ['Total registros',dashData.length],
-    ['Activos',dashData.filter(l=>l.estado==='activo').length],
-    ['Devueltos',dashData.filter(l=>l.estado==='devuelto').length],
-    ['Con apuntador',dashData.filter(l=>l.apuntador).length],
-  ]);
+  const ws2=XLSX.utils.aoa_to_sheet([['RESUMEN'],['Fecha',new Date().toLocaleString('es-MX')],['Total',dashData.length],['Activos',dashData.filter(l=>l.estado==='activo').length],['Devueltos',dashData.filter(l=>l.estado==='devuelto').length],['Con apuntador',dashData.filter(l=>l.apuntador).length]]);
   XLSX.utils.book_append_sheet(wb,'Resumen',ws2);
-
   XLSX.writeFile(wb,'Sheraton_Equipos_'+new Date().toISOString().slice(0,10)+'.xlsx');
-  toast('✅ Excel exportado correctamente.');
+  toast('✅ Excel exportado.');
 }
 
-/* ── 2FA Setup ───────────────────────────────────────────────────────────── */
+// ── Print Report ──────────────────────────────────────────────────────────
+function printReport(){
+  if(!dashData.length){ toast('No hay datos para imprimir.','warn'); return; }
+
+  document.getElementById('pr-fecha').textContent =
+    'Impreso el ' + new Date().toLocaleString('es-MX',{dateStyle:'full',timeStyle:'short'});
+
+  const f=getFilters();
+  const parts=[];
+  if(f.desde||f.hasta) parts.push('Período: '+(f.desde?fmt(f.desde):'inicio')+' → '+(f.hasta?fmt(f.hasta):'hoy'));
+  if(f.estado)        parts.push('Estado: '+f.estado);
+  if(f.salon)         parts.push('Salón: '+f.salon);
+  if(f.departamento)  parts.push('Depto: '+f.departamento);
+  if(f.evento)        parts.push('Evento: '+f.evento);
+  if(f.empleado)      parts.push('Empleado: '+f.empleado);
+  document.getElementById('pr-filters-summary').textContent = parts.length?'Filtros aplicados: '+parts.join(' | '):'Sin filtros — mostrando todos los registros.';
+
+  document.getElementById('pr-body').innerHTML = dashData.map(l=>{
+    const zona=l.zona?' Z.'+l.zona:'';
+    return `<tr>
+      <td style="font-family:monospace;font-size:9px">${esc(l.id)}</td>
+      <td>${esc(l.salon)}${esc(zona)}</td>
+      <td>${esc(l.evento||'—')}</td>
+      <td style="font-size:9px">${esc((KIT_ITEMS[l.kit]||[l.kit]).join(', '))}</td>
+      <td style="text-align:center">${l.apuntador?'✓':'—'}</td>
+      <td>${esc(l.empleado)}</td>
+      <td>${esc(l.numeroEmpleado)}</td>
+      <td>${esc(l.departamento)}</td>
+      <td>${esc(l.personalSeguridad)}</td>
+      <td style="white-space:nowrap;font-size:9px">${esc(fmt(l.fechaSalida))}</td>
+      <td><span class="pr-badge ${l.estado}">${l.estado==='devuelto'?'Devuelto':'Activo'}</span></td>
+      <td style="white-space:nowrap;font-size:9px">${l.fechaRegreso?esc(fmt(l.fechaRegreso)):'—'}</td>
+      <td>${esc(l.personalRegreso||'—')}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pr-footer').textContent =
+    `Total: ${dashData.length} registros · Activos: ${dashData.filter(l=>l.estado==='activo').length} · Devueltos: ${dashData.filter(l=>l.estado==='devuelto').length} · Generado por Sistema de Control de Equipos v3.1`;
+
+  // Ocultar área QR al imprimir reporte
+  document.getElementById('qr-print-area').style.display='none';
+  document.getElementById('print-area').style.display='block';
+  setTimeout(()=>{ window.print(); document.getElementById('print-area').style.display='none'; },300);
+}
+
+// ── Print QR ──────────────────────────────────────────────────────────────
+function printQR(){
+  const base=window.location.href.replace(/[?#].*/,'');
+  document.getElementById('qr-sol-print').src=
+    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=ffffff&color=07091a&format=png&qzone=2`;
+  document.getElementById('qr-ret-print').src=
+    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=ffffff&color=07091a&format=png&qzone=2`;
+
+  document.getElementById('print-area').style.display='none';
+  document.getElementById('qr-print-area').style.display='block';
+  setTimeout(()=>{ window.print(); document.getElementById('qr-print-area').style.display='none'; },500);
+}
+
+// ── 2FA Setup ─────────────────────────────────────────────────────────────
 async function showSetup2fa(){
   const panel=document.getElementById('panel-setup2fa');
   panel.style.display='block';
@@ -1081,7 +1040,7 @@ async function showSetup2fa(){
   } catch(e){ document.getElementById('qr-2fa').innerHTML=`<div class="alert alert-red">Error: ${esc(e.message)}</div>`; }
 }
 
-/* ── Init ────────────────────────────────────────────────────────────────── */
+// ── Init ──────────────────────────────────────────────────────────────────
 async function init(){
   lload(); renderHome();
   const v=new URLSearchParams(window.location.search).get('v');
@@ -1089,11 +1048,11 @@ async function init(){
   else if(v==='regreso'){ showView('regreso'); setTimeout(renderRegreso,50); }
   else showView('home');
 
-  if(SCRIPT_URL.includes('PEGA_AQUI')||API_KEY.includes('PEGA_AQUI'))
-    setTimeout(()=>toast('⚠ Configura SCRIPT_URL y API_KEY en index.html','warn'),1500);
+  // Sync inicial en background
+  await syncNow(true);
 
-  loadLoans(true);
-  setInterval(()=>loadLoans(true), 120000);
+  // Auto-sync cada 60 segundos en background (sin loader, silencioso)
+  _autoRefresh = setInterval(()=>syncNow(true), 60000);
 }
 
 init();
