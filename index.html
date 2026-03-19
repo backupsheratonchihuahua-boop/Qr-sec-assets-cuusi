@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sheraton Equipos">
+<meta name="theme-color" content="#07091a">
+<title>Sheraton CHH — Control de Equipos</title>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  ⚙️  CONFIGURACIÓN  — Edita SOLO esta sección          ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<script>
+const _CFG = {
+  SCRIPT_URL : 'https://script.google.com/macros/s/AKfycbxW8AM6MDa2bL-AJrR135V82GT4CUknSLg0xfM7PPM4y0JalrkjJwQCetJweDOQQ_2U/exec',   // ← URL de tu Apps Script Web App
+  API_KEY    : '203236923d60463d8f478a9269c180e55f706c87ced546909b442a129e4a2db8',              // ← Del log de initialSetup()
+  APP_VERSION: '2.0',
+};
+// ─── FIN DE CONFIGURACIÓN ───────────────────────────────────────────────────
+</script>
+
+<!-- SheetJS para exportar Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#07091a;--surf:#0c1026;--card:#111929;--border:#1c2a50;--gold:#c9a84c;--goldL:#e8d080;--goldD:#7d6225;--red:#c0392b;--redbg:rgba(192,57,43,.13);--green:#27a85a;--greenbg:rgba(39,168,90,.12);--amber:#e67e22;--amberbg:rgba(230,126,34,.12);--text:#ede0c8;--dim:#8a7f6a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);min-height:100vh;font-family:'DM Sans',sans-serif;color:var(--text);-webkit-tap-highlight-color:transparent}
+input,select,button,textarea{font-family:'DM Sans',sans-serif}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--surf)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.anim{animation:slideUp .32s ease both}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+
+/* ── Layout ── */
+#app{max-width:520px;margin:0 auto;min-height:100vh}
+.view{display:none;padding:16px 14px}
+.view.active{display:block}
+
+/* ── Header ── */
+.hdr{background:var(--surf);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.hdr-back{background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:0 6px 0 0;line-height:1;flex-shrink:0}
+.hdr-sub{font-size:9px;color:var(--goldD);text-transform:uppercase;letter-spacing:.2em;font-weight:700}
+.hdr-main{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--text);font-weight:600}
+.hdr-space{flex:1}
+.badge-venc{background:var(--red);color:#fff;border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;animation:pulse 2s infinite;white-space:nowrap}
+
+/* ── Steps ── */
+.steps{background:var(--surf);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center}
+.si{display:flex;align-items:center;flex:1}
+.sd{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:var(--border);color:var(--dim);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .3s}
+.sd.done{background:var(--green);color:#fff}.sd.curr{background:var(--gold);color:var(--bg)}
+.sl{font-size:10px;color:var(--dim);margin-left:5px;text-transform:uppercase;letter-spacing:.06em;transition:color .3s}
+.sl.curr{color:var(--gold)}.sline{flex:1;height:1px;background:var(--border);margin:0 6px}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.card-s{background:var(--surf)}
+
+/* ── Forms ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;font-weight:600}
+.req{color:var(--gold);margin-left:3px}
+.inp{width:100%;background:var(--surf);border:1px solid var(--border);border-radius:6px;padding:10px 13px;color:var(--text);font-size:13px;outline:none;transition:border .2s;-webkit-appearance:none}
+.inp:focus{border-color:var(--gold)}
+.inp-up{text-transform:uppercase;letter-spacing:.05em}
+.inp-pin{text-align:center;font-size:24px;letter-spacing:.4em}
+select.inp{appearance:none;cursor:pointer}
+
+/* ── Chips ── */
+.chips{display:grid;gap:7px}
+.chips2{grid-template-columns:1fr 1fr}
+.chip{background:var(--surf);border:1px solid var(--border);border-radius:7px;padding:9px;color:var(--text);font-weight:600;font-size:12px;cursor:pointer;transition:all .18s;text-align:center;width:100%}
+.chip:hover{border-color:var(--goldD)}.chip.on{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+.chip-eq{text-align:left;font-size:12px;font-weight:500;padding:11px 13px;background:var(--surf);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text);transition:all .18s;display:block;width:100%;margin-bottom:7px}
+.chip-eq:hover{border-color:var(--goldD)}.chip-eq.on{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+
+/* ── Buttons ── */
+.btn{border:none;border-radius:6px;padding:11px 20px;font-weight:600;font-size:13px;transition:all .18s;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gold{background:var(--gold);color:var(--bg)}.btn-gold:hover:not(:disabled){background:var(--goldL)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-ghost{background:transparent;border:1px solid var(--goldD);color:var(--gold)}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-full{width:100%}.btn-sm{padding:7px 14px;font-size:11px}
+.btn-row{display:flex;gap:8px;margin-top:14px}
+.btn-row .btn{flex:1}.btn-row .btn-main{flex:2}
+
+/* ── Alerts ── */
+.alert{border-radius:7px;padding:10px 13px;margin-bottom:14px;font-size:11px;line-height:1.6}
+.alert-red{background:var(--redbg);border:1px solid rgba(192,57,43,.4);color:var(--red)}
+.alert-green{background:var(--greenbg);border:1px solid rgba(39,168,90,.4);color:var(--green)}
+.alert-amber{background:var(--amberbg);border:1px solid rgba(230,126,34,.4);color:var(--amber)}
+.alert-blue{background:rgba(90,138,224,.12);border:1px solid rgba(90,138,224,.4);color:#5a8ae0}
+
+/* ── Stat row ── */
+.stat-row{display:flex;gap:8px;margin-bottom:14px}
+.stat-box{background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;flex:1}
+.sv{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700}
+.sl2{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+/* ── Badge ── */
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;display:inline-block}
+
+/* ── Loan card ── */
+.lc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:10px;border-left:4px solid var(--amber)}
+.lc.devuelto{border-left-color:var(--green)}.lc.vencido{border-left-color:var(--red);border-color:var(--red)}
+.lc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:6px;flex-wrap:wrap}
+.lc-eq{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600}
+.lc-sal{font-size:11px;color:var(--dim);margin-top:2px}
+.lc-data{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:11px}
+
+/* ── Active-select btn ── */
+.asel{width:100%;background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:7px;padding:11px 13px;text-align:left;cursor:pointer;margin-bottom:7px;transition:border-color .2s}
+.asel:hover{border-color:var(--gold)}.asel.vencido{border-left-color:var(--red);border-color:rgba(192,57,43,.4)}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(150deg,#0d1530,var(--bg));border-bottom:1px solid var(--border);padding:22px 18px 18px;text-align:center}
+.hero-sub{font-size:9px;color:var(--goldD);letter-spacing:.22em;text-transform:uppercase;margin-bottom:5px;font-weight:700}
+.hero-t{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;line-height:1.2}
+.hero-tag{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--gold);margin-top:3px;font-style:italic}
+
+/* ── Home buttons ── */
+.hbtn-main{background:linear-gradient(135deg,var(--gold),var(--goldL));border:none;border-radius:10px;padding:14px;color:var(--bg);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s}
+.hbtn-main:hover{opacity:.9}
+.hbtn-sec{background:var(--surf);border:1px solid rgba(39,168,90,.4);border-radius:10px;padding:13px;color:var(--green);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:100%;margin-bottom:10px}
+.hbtn-sec:hover{border-color:var(--green)}
+.hbtn-adm{background:transparent;border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--dim);font-weight:500;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;width:100%}
+.hbtn-adm:hover{border-color:var(--goldD);color:var(--text)}
+
+/* ── Folio box ── */
+.folio-box{background:linear-gradient(135deg,rgba(125,98,37,.2),var(--card));border:1px solid var(--goldD);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px}
+.folio-lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.folio-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--gold);letter-spacing:.04em}
+
+/* ── Summary rows ── */
+.srow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.sk{color:var(--dim)}.sv2{color:var(--text);font-weight:500;text-align:right;max-width:60%}
+
+/* ── QR ── */
+.qr-wrap{background:var(--surf);border:1px solid rgba(201,168,76,.35);border-radius:12px;padding:16px;text-align:center;flex:1;min-width:155px}
+.qr-wrap img{display:block;margin:0 auto 10px;border-radius:6px}
+.qr-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.qr-sub{font-size:10px;color:var(--dim);margin-top:3px}
+.qr-g{border-color:rgba(39,168,90,.35)}
+
+/* ── Filters ── */
+.frow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.fbtn{background:var(--surf);border:1px solid var(--border);color:var(--dim);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+
+/* ── Toast ── */
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:8px;font-weight:500;font-size:13px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.7);animation:fadeIn .3s ease;max-width:92vw;text-align:center;display:none;color:#fff}
+
+/* ── Loading overlay ── */
+#loader{position:fixed;inset:0;background:rgba(7,9,26,.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:9000}
+#loader .ld-txt{font-size:13px;color:var(--dim)}
+
+/* ── Filter panel (dashboard) ── */
+.filter-panel{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px}
+.filter-panel .fp-title{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:12px}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── Edit modal ── */
+#modal{position:fixed;inset:0;background:rgba(7,9,26,.9);display:none;align-items:flex-start;justify-content:center;z-index:8000;padding:20px;overflow-y:auto}
+#modal-inner{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:480px;margin-top:20px}
+
+@media(max-width:400px){.lc-data{grid-template-columns:1fr}.filter-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ HEADER ══ -->
+  <div class="hdr" id="hdr" style="display:none">
+    <button class="hdr-back" id="hdr-back" onclick="goBack()" style="display:none">←</button>
+    <div><div class="hdr-sub">Sheraton Chihuahua Soberano</div><div class="hdr-main" id="hdr-title"></div></div>
+    <div class="hdr-space"></div>
+    <div class="badge-venc" id="badge-venc" style="display:none"></div>
+  </div>
+
+  <!-- ══ STEPS ══ -->
+  <div class="steps" id="steps" style="display:none">
+    <div class="si"><div class="sd" id="sd1">1</div><div class="sl" id="sl1">Equipo</div><div class="sline"></div></div>
+    <div class="si"><div class="sd" id="sd2">2</div><div class="sl" id="sl2">Empleado</div><div class="sline"></div></div>
+    <div class="si"><div class="sd" id="sd3">3</div><div class="sl" id="sl3">Guardia</div></div>
+  </div>
+
+  <!-- ══ HOME ══ -->
+  <div id="v-home" class="view active">
+    <div class="hero">
+      <div class="hero-sub">Departamento de Seguridad</div>
+      <div class="hero-t">Sheraton Chihuahua Soberano</div>
+      <div class="hero-tag">Control de Préstamo de Equipos</div>
+    </div>
+    <div style="padding:16px 14px">
+      <div class="stat-row" id="home-stats"></div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;font-weight:700">Códigos QR — Escritorio de Seguridad</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap" id="qr-wrap"></div>
+        <div style="font-size:10px;color:var(--dim);text-align:center;margin-top:10px;line-height:1.6">Imprime y coloca en el escritorio de seguridad.<br>El personal escanea para gestionar préstamos.</div>
+      </div>
+      <button class="hbtn-main" onclick="nav('sol1')"><span style="font-size:18px">📤</span> Registrar Préstamo de Equipo</button>
+      <button class="hbtn-sec"  onclick="nav('regreso')"><span style="font-size:18px">📥</span> Registrar Regreso de Equipo</button>
+      <button class="hbtn-adm"  onclick="nav('dashboard')">🔐 Panel de Seguridad — Historial</button>
+      <div id="home-venc" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ══ SOLICITUD S1 ══ -->
+  <div id="v-sol1" class="view">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:14px">Selección de Equipo</div>
+    <div class="field"><label>Salón <span class="req">*</span></label>
+      <select class="inp" id="sel-salon" onchange="onSalon()">
+        <option value="">— Selecciona el salón —</option>
+        <option>Salón Diamante</option><option>Salón Rubí</option>
+        <option>Salón Esmeralda</option><option>Salón Zafiro</option>
+      </select>
+    </div>
+    <div class="field" id="zona-f" style="display:none"><label>Zona <span class="req">*</span></label><div class="chips chips2" id="zona-c"></div></div>
+    <div class="field" id="equipo-f" style="display:none"><label>Equipo <span class="req">*</span></label><div id="equipo-c"></div></div>
+    <button class="btn btn-gold btn-full" onclick="step(2)" style="margin-top:8px">Continuar →</button>
+  </div>
+
+  <!-- ══ SOLICITUD S2 ══ -->
+  <div id="v-sol2" class="view">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Datos del Empleado</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">El empleado que solicita proporciona sus datos.</div>
+    <div class="card card-s" id="s2-sum" style="margin-bottom:14px;padding:10px 13px"></div>
+    <div class="field"><label>Nombre completo <span class="req">*</span></label><input class="inp" id="i-empleado" type="text" placeholder="Ej. Juan Pérez García" autocomplete="off"></div>
+    <div class="field"><label>No. Empleado / Tarjeta <span class="req">*</span></label><input class="inp" id="i-numemp" type="text" placeholder="Ej. 10842" autocomplete="off"></div>
+    <div class="field"><label>Departamento <span class="req">*</span></label><div class="chips chips2" id="depto-c"></div></div>
+    <div class="btn-row"><button class="btn btn-outline" onclick="step(1)">← Atrás</button><button class="btn btn-gold btn-main" onclick="step(3)">Continuar →</button></div>
+  </div>
+
+  <!-- ══ SOLICITUD S3 ══ -->
+  <div id="v-sol3" class="view">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Confirmación del Guardia</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">El guardia registra su nombre al entregar el equipo.</div>
+    <div class="card card-s" id="s3-sum" style="margin-bottom:14px"></div>
+    <div class="field"><label>Guardia que entrega el equipo <span class="req">*</span></label><input class="inp" id="i-guardia" type="text" placeholder="Nombre completo del guardia" autocomplete="off"></div>
+    <div class="alert alert-red">⚠ <strong>Responsabilidad:</strong> Al registrar confirmas que el equipo fue entregado físicamente y que el empleado responde por él dentro de <strong>4 horas</strong>.</div>
+    <div class="btn-row"><button class="btn btn-outline" onclick="step(2)">← Atrás</button><button class="btn btn-gold btn-main" onclick="submitSolicitud()">✓ Confirmar Préstamo</button></div>
+  </div>
+
+  <!-- ══ CONFIRMACIÓN ══ -->
+  <div id="v-confirmacion" class="view" style="text-align:center">
+    <div style="font-size:44px;margin-bottom:10px">✅</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;margin-bottom:4px">Préstamo registrado</div>
+    <div style="font-size:12px;color:var(--dim);margin-bottom:18px">Guarda el folio para la devolución.</div>
+    <div class="folio-box" id="cf-folio"></div>
+    <div class="card" id="cf-detail" style="text-align:left"></div>
+    <div class="alert alert-amber" style="text-align:left">⏱ Devolver en <strong>4 horas</strong>. Después quedará como <strong>VENCIDO</strong>.</div>
+    <button class="btn btn-gold btn-full" onclick="nav('sol1')" style="margin-bottom:8px">+ Nuevo Préstamo</button>
+    <button class="btn btn-outline btn-full" onclick="nav('home')">← Inicio</button>
+  </div>
+
+  <!-- ══ REGRESO ══ -->
+  <div id="v-regreso" class="view">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Devolución de Equipo</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">Ingresa el folio o selecciona de la lista.</div>
+    <div class="field"><label>Número de folio <span class="req">*</span></label>
+      <div style="display:flex;gap:8px">
+        <input class="inp inp-up" id="i-folio" type="text" placeholder="SHR-YYYYMMDD-XXXX" style="flex:1" onkeydown="if(event.key==='Enter')searchFolio()">
+        <button class="btn btn-gold" onclick="searchFolio()">Buscar</button>
+      </div>
+    </div>
+    <div id="ret-err" class="alert alert-red" style="display:none"></div>
+    <div id="ret-list"></div>
+    <div id="ret-found"></div>
+    <div id="ret-empty" class="alert alert-green" style="display:none;text-align:center"><div style="font-size:28px;margin-bottom:6px">✅</div><div style="font-weight:600">Sin préstamos activos</div><div style="font-size:11px;margin-top:2px">Todo el equipo está en Seguridad.</div></div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div id="v-dashboard" class="view">
+
+    <!-- 2FA gate -->
+    <div id="gate-2fa" style="max-width:340px;margin:24px auto;text-align:center">
+      <div style="font-size:40px;margin-bottom:10px">🔐</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;margin-bottom:4px">Acceso Protegido</div>
+      <div style="font-size:12px;color:var(--dim);margin-bottom:18px">Se requiere código de autenticación de dos factores (Google Authenticator).</div>
+      <div class="field"><label>Código 2FA — 6 dígitos</label>
+        <input class="inp inp-pin" id="i-2fa" type="tel" maxlength="6" placeholder="• • • • • •" inputmode="numeric"
+               onkeydown="if(event.key==='Enter')verify2FA()" oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <div id="fa-err" class="alert alert-red" style="display:none">⚠ Código incorrecto o expirado. Intenta de nuevo.</div>
+      <button class="btn btn-gold btn-full" onclick="verify2FA()">Verificar y Acceder</button>
+      <div style="font-size:10px;color:var(--dim);margin-top:14px;line-height:1.5">
+        Abre Google Authenticator y escribe el código de<br><strong style="color:var(--gold)">SheratonCHH</strong>
+      </div>
+    </div>
+
+    <!-- Dashboard content -->
+    <div id="dash" style="display:none">
+      <div class="stat-row" id="dash-stats"></div>
+
+      <!-- Filters -->
+      <div class="filter-panel">
+        <div class="fp-title">Filtros de búsqueda</div>
+        <div class="filter-grid">
+          <div class="field" style="margin-bottom:8px"><label>Desde</label><input class="inp" id="f-desde" type="date"></div>
+          <div class="field" style="margin-bottom:8px"><label>Hasta</label><input class="inp" id="f-hasta" type="date"></div>
+          <div class="field" style="margin-bottom:8px"><label>Estado</label>
+            <select class="inp" id="f-estado"><option value="">Todos</option><option value="activo">Activo</option><option value="devuelto">Devuelto</option></select>
+          </div>
+          <div class="field" style="margin-bottom:8px"><label>Departamento</label>
+            <select class="inp" id="f-depto"><option value="">Todos</option><option>Mantenimiento</option><option>Banquetes</option><option>Ventas</option><option>Sistemas</option></select>
+          </div>
+          <div class="field" style="margin-bottom:8px"><label>Salón / Evento</label>
+            <select class="inp" id="f-salon"><option value="">Todos</option><option>Salón Diamante</option><option>Salón Rubí</option><option>Salón Esmeralda</option><option>Salón Zafiro</option></select>
+          </div>
+          <div class="field" style="margin-bottom:8px"><label>Equipo</label>
+            <select class="inp" id="f-equipo"><option value="">Todos</option><option>Control de pantalla de proyección</option><option>Control de proyector</option><option>Apuntador láser</option><option>Dispositivo de proyección inalámbrico</option></select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:8px"><label>Empleado (nombre)</label><input class="inp" id="f-emp" type="text" placeholder="Buscar por nombre..."></div>
+        <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+          <button class="btn btn-gold btn-sm" style="flex:1" onclick="applyFilters()">🔍 Aplicar Filtros</button>
+          <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Limpiar</button>
+        </div>
+      </div>
+
+      <div id="dash-list"></div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 Exportar Excel</button>
+        <button class="btn btn-outline btn-sm" onclick="reloadDash()">↺ Actualizar</button>
+        <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:rgba(192,57,43,.4)" onclick="showSetup2fa()">🔑 Setup 2FA</button>
+      </div>
+
+      <!-- 2FA Setup panel -->
+      <div id="panel-setup2fa" class="card" style="display:none;margin-top:14px;text-align:center">
+        <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-weight:700">Configurar Google Authenticator</div>
+        <div id="qr-2fa"></div>
+        <div style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.6">
+          Abre <strong style="color:var(--text)">Google Authenticator</strong> → <strong style="color:var(--text)">+</strong> → <strong style="color:var(--text)">Escanear código QR</strong>
+        </div>
+        <div id="secret-2fa" style="margin-top:8px"></div>
+        <button class="btn btn-outline btn-sm btn-full" style="margin-top:10px" onclick="document.getElementById('panel-setup2fa').style.display='none'">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- Loading -->
+<div id="loader"><div class="spin" style="font-size:28px">⏳</div><div class="ld-txt" id="ld-txt">Conectando…</div></div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Edit Modal -->
+<div id="modal">
+  <div id="modal-inner">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;margin-bottom:14px">Editar Registro</div>
+    <div id="modal-body"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold btn-main" onclick="saveEdit()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SCRIPT
+═══════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── Config & State ─────────────────────────────────────────────────────── */
+const SCRIPT_URL = _CFG.SCRIPT_URL;
+const API_KEY    = _CFG.API_KEY;
+
+const SALONES = {
+  'Salón Diamante':  { zonas:['A1','B','B1','C'], equipos:['Control de pantalla de proyección','Control de proyector','Apuntador láser'] },
+  'Salón Rubí':      { zonas:null,                equipos:['Control de pantalla de proyección','Control de proyector','Apuntador láser'] },
+  'Salón Esmeralda': { zonas:null,                equipos:['Control de proyector','Dispositivo de proyección inalámbrico'] },
+  'Salón Zafiro':    { zonas:null,                equipos:['Control de proyector','Dispositivo de proyección inalámbrico'] },
+};
+const DEPTOS   = ['Mantenimiento','Banquetes','Ventas','Sistemas'];
+const HORAS_MAX = 4;
+const SK        = 'shr_loans_cache_v2';
+const SK_SESS   = 'shr_session';
+
+let loans       = [];
+let sessionToken = sessionStorage.getItem(SK_SESS) || null;
+let curView     = 'home';
+let dashData    = [];
+let editingId   = null;
+
+// Form
+let fSalon='',fZona='',fEquipo='',fEmpleado='',fNumEmp='',fDepto='',fGuardia='';
+// Regreso
+let rFound = null;
+
+/* ── Helpers ────────────────────────────────────────────────────────────── */
+const fmt  = ts => new Date(ts).toLocaleString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+const fmtD = ts => new Date(ts).toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+const hAgo = ts => (Date.now()-ts)/3.6e6;
+const isLate = l => l.estado==='activo' && hAgo(l.fechaSalida)>=HORAS_MAX;
+const actives = () => loans.filter(l=>l.estado==='activo');
+const overdue = () => actives().filter(isLate);
+const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const localSave = () => { try{ localStorage.setItem(SK,JSON.stringify(loans)); }catch(_){} };
+const localLoad = () => { try{ const d=localStorage.getItem(SK); if(d) loans=JSON.parse(d); }catch(_){} };
+
+/* ── API ────────────────────────────────────────────────────────────────── */
+async function api(action, extra={}) {
+  const body = { action, apiKey: API_KEY, sessionToken, ...extra };
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method : 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // avoids CORS preflight
+      body   : JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Error del servidor');
+    return json;
+  } catch (err) {
+    // Offline fallback for reads
+    if (action === 'getLoans') return { ok:true, loans };
+    throw err;
+  }
+}
+
+/* ── Loading indicator ──────────────────────────────────────────────────── */
+let _ldrTimer;
+function loading(msg) {
+  clearTimeout(_ldrTimer);
+  document.getElementById('ld-txt').textContent = msg || 'Procesando…';
+  document.getElementById('loader').style.display = 'flex';
+}
+function doneLoading() {
+  _ldrTimer = setTimeout(()=>{ document.getElementById('loader').style.display='none'; }, 200);
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────────── */
+let _tTimer;
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='err'?'#c0392b': type==='warn'?'#e67e22':'#27a85a';
+  el.style.display = 'block';
+  clearTimeout(_tTimer);
+  _tTimer = setTimeout(()=>{ el.style.display='none'; }, 4500);
+}
+
+/* ── Navigation ─────────────────────────────────────────────────────────── */
+const TITLES = { home:'Control de Equipos', sol1:'Solicitud de Equipo', sol2:'Solicitud de Equipo',
+  sol3:'Solicitud de Equipo', confirmacion:'Préstamo Registrado',
+  regreso:'Registro de Regreso', dashboard:'Panel de Seguridad' };
+const BACKS  = { sol1:'home', sol2:'sol1', sol3:'sol2',
+  confirmacion:'home', regreso:'home', dashboard:'home' };
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = document.getElementById('v-'+id);
+  if (el) { el.classList.add('active'); el.classList.add('anim'); }
+  curView = id;
+  const hdr  = document.getElementById('hdr');
+  const stps = document.getElementById('steps');
+  hdr.style.display  = id==='home'?'none':'flex';
+  stps.style.display = ['sol1','sol2','sol3'].includes(id)?'flex':'none';
+  document.getElementById('hdr-back').style.display  = BACKS[id]?'block':'none';
+  document.getElementById('hdr-title').textContent   = TITLES[id]||'';
+  updateVencBadge();
+  window.scrollTo(0,0);
+}
+
+function nav(id) {
+  if (id==='sol1')      { resetForm(); updateStepUI(1); }
+  if (id==='regreso')   { rFound=null; setTimeout(renderRegreso,50); }
+  if (id==='dashboard') {
+    const hadSession = !!sessionToken;
+    document.getElementById('gate-2fa').style.display   = hadSession?'none':'block';
+    document.getElementById('dash').style.display        = hadSession?'block':'none';
+    document.getElementById('i-2fa').value='';
+    document.getElementById('fa-err').style.display='none';
+    if (hadSession) { showView('dashboard'); reloadDash(); return; }
+  }
+  showView(id);
+}
+
+function goBack() {
+  const b = BACKS[curView];
+  if (b) nav(b);
+}
+
+/* ── Load initial data ──────────────────────────────────────────────────── */
+async function loadLoans(silent) {
+  if (!silent) loading('Sincronizando datos…');
+  try {
+    const r = await api('getLoans');
+    loans = r.loans || [];
+    localSave();
+  } catch(e) {
+    localLoad();
+    if (!silent) toast('Sin conexión — mostrando datos locales', 'warn');
+  }
+  doneLoading();
+  renderHome();
+}
+
+/* ── HOME ───────────────────────────────────────────────────────────────── */
+function renderHome() {
+  const act = actives(), ov = overdue();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const retHoy = loans.filter(l=>l.estado==='devuelto'&&l.fechaRegreso>=today);
+  document.getElementById('home-stats').innerHTML = `
+    <div class="stat-box"><div class="sv" style="color:${act.length>0?'var(--amber)':'var(--dim)'}">${act.length}</div><div class="sl2">Activos</div></div>
+    <div class="stat-box"><div class="sv" style="color:${ov.length>0?'var(--red)':'var(--dim)'}">${ov.length}</div><div class="sl2">Vencidos</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--green)">${retHoy.length}</div><div class="sl2">Dev. Hoy</div></div>
+  `;
+  const base = window.location.href.replace(/[?#].*/,'');
+  document.getElementById('qr-wrap').innerHTML = `
+    <div class="qr-wrap">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=0c1026&color=c9a84c&format=png&qzone=1" width="160" height="160" alt="QR">
+      <div class="qr-label" style="color:var(--gold)">Solicitud de equipo</div>
+      <div class="qr-sub">Escanea con la cámara</div>
+    </div>
+    <div class="qr-wrap qr-g">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=0c1026&color=27a85a&format=png&qzone=1" width="160" height="160" alt="QR">
+      <div class="qr-label" style="color:var(--green)">Registrar regreso</div>
+      <div class="qr-sub">Escanea con la cámara</div>
+    </div>
+  `;
+  let html='';
+  if (ov.length>0) {
+    html = `<div class="alert alert-red"><div style="font-weight:700;margin-bottom:8px">⚠ EQUIPOS VENCIDOS (${ov.length})</div>`;
+    ov.forEach(l=>{ html+=`<div style="font-size:11px;margin-bottom:5px;padding-left:8px;border-left:2px solid var(--red)"><strong>${esc(l.equipo)}</strong> — ${esc(l.salon)}${l.zona?' Z.'+esc(l.zona):''}<br><span style="color:var(--dim)">${esc(l.empleado)} (${esc(l.departamento)}) · ${hAgo(l.fechaSalida).toFixed(1)} hrs</span></div>`; });
+    html+='</div>';
+  }
+  document.getElementById('home-venc').innerHTML = html;
+}
+
+function updateVencBadge() {
+  const ov = overdue(), b = document.getElementById('badge-venc');
+  if (ov.length>0){ b.style.display='inline-block'; b.textContent=`⚠ ${ov.length} VENCIDO${ov.length>1?'S':''}`; }
+  else b.style.display='none';
+}
+
+/* ── SOLICITUD ──────────────────────────────────────────────────────────── */
+function resetForm(){ fSalon=fZona=fEquipo=fEmpleado=fNumEmp=fDepto=fGuardia=''; }
+
+function renderDeptoChips(){
+  document.getElementById('depto-c').innerHTML = DEPTOS.map(d=>
+    `<button class="chip${fDepto===d?' on':''}" onclick="selDepto('${d}')">${d}</button>`
+  ).join('');
+}
+function selDepto(d){ fDepto=d; renderDeptoChips(); }
+function selZona(z){ fZona=z; renderZonaChips(); renderEquipoChips(); }
+function selEquipo(e){ fEquipo=e; renderEquipoChips(); }
+
+function renderZonaChips(){
+  const s=SALONES[fSalon]; if(!s||!s.zonas) return;
+  document.getElementById('zona-c').innerHTML = s.zonas.map(z=>
+    `<button class="chip${fZona===z?' on':''}" onclick="selZona('${z}')">Zona ${z}</button>`
+  ).join('');
+}
+function renderEquipoChips(){
+  const s=SALONES[fSalon]; if(!s) return;
+  document.getElementById('equipo-c').innerHTML = s.equipos.map(e=>
+    `<button class="chip-eq${fEquipo===e?' on':''}" onclick="selEquipo(\`${e}\`)">${fEquipo===e?'✓ ':'○ '}${esc(e)}</button>`
+  ).join('');
+}
+function onSalon(){
+  fSalon=document.getElementById('sel-salon').value; fZona=''; fEquipo='';
+  const s=SALONES[fSalon];
+  document.getElementById('zona-f').style.display=(s&&s.zonas)?'block':'none';
+  document.getElementById('equipo-f').style.display=fSalon?'block':'none';
+  if(s&&s.zonas) renderZonaChips();
+  renderEquipoChips();
+}
+
+function valStep(n){
+  if(n===1){
+    if(!fSalon){ toast('Selecciona el salón.','err'); return false; }
+    if(fSalon==='Salón Diamante'&&!fZona){ toast('Selecciona la zona.','err'); return false; }
+    if(!fEquipo){ toast('Selecciona el equipo.','err'); return false; }
+  }
+  if(n===2){
+    fEmpleado=document.getElementById('i-empleado').value.trim();
+    fNumEmp=document.getElementById('i-numemp').value.trim();
+    if(!fEmpleado){ toast('Ingresa el nombre del empleado.','err'); return false; }
+    if(!fNumEmp){ toast('Ingresa el número de empleado.','err'); return false; }
+    if(!fDepto){ toast('Selecciona el departamento.','err'); return false; }
+  }
+  return true;
+}
+
+function updateStepUI(curr){
+  [1,2,3].forEach(i=>{
+    document.getElementById('sd'+i).className='sd'+(i<curr?' done':i===curr?' curr':'');
+    document.getElementById('sl'+i).className='sl'+(i===curr?' curr':'');
+    document.getElementById('sd'+i).textContent=i<curr?'✓':i;
+  });
+}
+
+function step(to){
+  if(to===2&&!valStep(1)) return;
+  if(to===3&&!valStep(2)) return;
+  if(to===2){
+    renderDeptoChips();
+    const s=fSalon+(fZona?` — Zona ${fZona}`:'');
+    document.getElementById('s2-sum').innerHTML=`<div style="font-size:10px;color:var(--dim)">Equipo:</div><div style="font-weight:600;color:var(--gold);font-size:12px">${esc(fEquipo)}</div><div style="font-size:11px;color:var(--dim)">${esc(s)}</div>`;
+    document.getElementById('i-empleado').value=fEmpleado;
+    document.getElementById('i-numemp').value=fNumEmp;
+  }
+  if(to===3){
+    fEmpleado=document.getElementById('i-empleado').value.trim();
+    fNumEmp=document.getElementById('i-numemp').value.trim();
+    const rows=[['Equipo',fEquipo],['Salón',fSalon+(fZona?` — Zona ${fZona}`:'')],['Empleado',fEmpleado],['No. Empleado',fNumEmp],['Departamento',fDepto]];
+    document.getElementById('s3-sum').innerHTML=`<div style="font-size:10px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Resumen</div>${rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('')}`;
+    document.getElementById('i-guardia').value=fGuardia;
+  }
+  if(to===1){ document.getElementById('sel-salon').value=fSalon; onSalon(); }
+  updateStepUI(to); showView('sol'+to);
+}
+
+async function submitSolicitud(){
+  fGuardia=document.getElementById('i-guardia').value.trim();
+  if(!fGuardia){ toast('Ingresa el nombre del guardia.','err'); return; }
+
+  // Local duplicate check
+  const dup=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona)&&l.equipo===fEquipo);
+  if(dup){ toast(`⚠ Equipo ya en préstamo activo. Folio: ${dup.id}`,'err'); return; }
+
+  loading('Registrando préstamo…');
+  try {
+    const loan={salon:fSalon,zona:fZona||null,equipo:fEquipo,empleado:fEmpleado,
+                numeroEmpleado:fNumEmp,departamento:fDepto,personalSeguridad:fGuardia,fechaSalida:Date.now()};
+    const r = await api('addLoan',{loan});
+    loans.unshift(r.loan); localSave();
+    // Confirmation
+    const cf=r.loan;
+    document.getElementById('cf-folio').innerHTML=`<div class="folio-lbl">Número de Folio</div><div class="folio-num">${esc(cf.id)}</div><div style="font-size:10px;color:var(--dim);margin-top:3px">Guarda este folio para la devolución</div>`;
+    const rows=[['Equipo',cf.equipo],['Salón',cf.salon+(cf.zona?` — Zona ${cf.zona}`:'')],['Empleado',cf.empleado],['No. Empleado',cf.numeroEmpleado],['Departamento',cf.departamento],['Guardia (salida)',cf.personalSeguridad],['Fecha y hora',fmt(cf.fechaSalida)]];
+    document.getElementById('cf-detail').innerHTML=rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('');
+    showView('confirmacion');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+  doneLoading();
+}
+
+/* ── REGRESO ────────────────────────────────────────────────────────────── */
+function renderRegreso(){
+  document.getElementById('ret-err').style.display='none';
+  document.getElementById('ret-found').innerHTML='';
+  const act=actives();
+  document.getElementById('ret-empty').style.display=(!rFound&&act.length===0)?'block':'none';
+  if(!rFound && act.length>0){
+    let html=`<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700">Préstamos activos — toca para seleccionar</div>`;
+    act.forEach(l=>{
+      const late=isLate(l);
+      html+=`<button class="asel${late?' vencido':''}" onclick="pickLoan('${l.id}')">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-weight:600;font-size:12px;color:var(--text)">${esc(l.equipo)}</span>
+          ${late?'<span style="color:var(--red);font-size:10px;font-weight:700">⚠ VENCIDO</span>':''}
+        </div>
+        <div style="font-size:11px;color:var(--dim)">${esc(l.salon)}${l.zona?` — Zona ${esc(l.zona)}`:''}</div>
+        <div style="font-size:11px;color:var(--dim)">${esc(l.empleado)} · ${esc(l.departamento)}</div>
+        <div style="font-size:10px;color:var(--gold);margin-top:2px">${l.id}</div>
+      </button>`;
+    });
+    document.getElementById('ret-list').innerHTML=html;
+  } else {
+    document.getElementById('ret-list').innerHTML='';
+  }
+}
+
+function searchFolio(){
+  const q=document.getElementById('i-folio').value.trim().toUpperCase();
+  const errEl=document.getElementById('ret-err');
+  if(!q){ errEl.textContent='Ingresa el folio del préstamo.'; errEl.style.display='block'; return; }
+  const f=loans.find(l=>l.id.toUpperCase()===q);
+  if(!f){ errEl.textContent='Folio no encontrado. Verifica e intenta de nuevo.'; errEl.style.display='block'; return; }
+  if(f.estado!=='activo'){ errEl.textContent='Este préstamo ya fue cerrado (equipo devuelto).'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  pickLoan(f.id);
+}
+
+function pickLoan(id){
+  rFound=loans.find(l=>l.id===id);
+  document.getElementById('ret-list').innerHTML='';
+  renderRetFound();
+}
+
+function renderRetFound(){
+  if(!rFound){ document.getElementById('ret-found').innerHTML=''; return; }
+  const l=rFound, late=isLate(l);
+  const rows=[['Folio',l.id],['Equipo',l.equipo],['Salón',l.salon+(l.zona?` — Zona ${l.zona}`:'')],['Empleado',l.empleado],['No. Empleado',l.numeroEmpleado],['Departamento',l.departamento],['Guardia (salida)',l.personalSeguridad],['Fecha salida',fmt(l.fechaSalida)],['Tiempo transcurrido',`${hAgo(l.fechaSalida).toFixed(1)} horas`]];
+  document.getElementById('ret-found').innerHTML=`
+    <div class="card" style="border-left:4px solid var(--green);border-color:rgba(39,168,90,.4);margin-bottom:14px">
+      <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700">✓ Préstamo encontrado</div>
+      ${rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2" style="color:${k==='Folio'?'var(--gold)':k==='Tiempo transcurrido'&&late?'var(--red)':'var(--text)'}">${esc(v)}</span></div>`).join('')}
+    </div>
+    <div class="field"><label>Guardia que recibe el equipo <span class="req">*</span></label><input class="inp" id="i-gret" type="text" placeholder="Nombre completo del guardia" autocomplete="off"></div>
+    <div id="ret-found-err" class="alert alert-red" style="display:none"></div>
+    <div class="alert alert-green">✓ Al confirmar, el préstamo se cerrará y quedará registrado como devuelto.</div>
+    <button class="btn btn-green btn-full" onclick="submitRegreso()">✓ Confirmar Devolución</button>
+  `;
+}
+
+async function submitRegreso(){
+  const g=(document.getElementById('i-gret')||{}).value?.trim();
+  const errEl=document.getElementById('ret-found-err');
+  if(!g){ errEl.textContent='Ingresa el nombre del guardia que recibe.'; errEl.style.display='block'; return; }
+  loading('Registrando devolución…');
+  try {
+    await api('returnLoan',{id:rFound.id,guardia:g});
+    loans=loans.map(l=>l.id===rFound.id?{...l,estado:'devuelto',fechaRegreso:Date.now(),personalRegreso:g}:l);
+    localSave();
+    toast(`✅ Equipo devuelto. Folio: ${rFound.id}`,'ok');
+    rFound=null;
+    showView('regreso');
+    setTimeout(renderRegreso,50);
+  } catch(e){ toast('Error: '+e.message,'err'); }
+  doneLoading();
+}
+
+/* ── 2FA ────────────────────────────────────────────────────────────────── */
+async function verify2FA(){
+  const code=(document.getElementById('i-2fa').value||'').trim();
+  if(code.length!==6){ document.getElementById('fa-err').style.display='block'; return; }
+  loading('Verificando código 2FA…');
+  try {
+    const r=await api('verify2fa',{code});
+    sessionToken=r.sessionToken;
+    sessionStorage.setItem(SK_SESS,sessionToken);
+    document.getElementById('gate-2fa').style.display='none';
+    document.getElementById('dash').style.display='block';
+    document.getElementById('fa-err').style.display='none';
+    reloadDash();
+  } catch(e){
+    document.getElementById('fa-err').style.display='block';
+  }
+  doneLoading();
+}
+
+/* ── DASHBOARD ──────────────────────────────────────────────────────────── */
+async function reloadDash(){
+  loading('Cargando historial…');
+  try {
+    const f=getFilters();
+    const r=await api('getHistory',{filters:f});
+    dashData=r.loans||[];
+  } catch(e){
+    dashData=applyLocalFilters(getFilters());
+    toast('Sin conexión — datos locales','warn');
+  }
+  doneLoading();
+  renderDash();
+}
+
+function getFilters(){
+  return {
+    desde    : document.getElementById('f-desde').value  ? new Date(document.getElementById('f-desde').value+'T00:00').getTime() : null,
+    hasta    : document.getElementById('f-hasta').value  ? new Date(document.getElementById('f-hasta').value+'T23:59').getTime() : null,
+    estado   : document.getElementById('f-estado').value || null,
+    departamento: document.getElementById('f-depto').value  || null,
+    salon    : document.getElementById('f-salon').value  || null,
+    equipo   : document.getElementById('f-equipo').value || null,
+    empleado : document.getElementById('f-emp').value.trim() || null,
+  };
+}
+
+function applyLocalFilters(f){
+  return loans.filter(l=>{
+    if(f.desde    && l.fechaSalida<f.desde)    return false;
+    if(f.hasta    && l.fechaSalida>f.hasta)    return false;
+    if(f.estado   && l.estado!==f.estado)      return false;
+    if(f.departamento && l.departamento!==f.departamento) return false;
+    if(f.salon    && l.salon!==f.salon)        return false;
+    if(f.equipo   && l.equipo!==f.equipo)      return false;
+    if(f.empleado && !l.empleado.toLowerCase().includes(f.empleado.toLowerCase())) return false;
+    return true;
+  });
+}
+
+function applyFilters(){ reloadDash(); }
+function clearFilters(){
+  ['f-desde','f-hasta'].forEach(id=>document.getElementById(id).value='');
+  ['f-estado','f-depto','f-salon','f-equipo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-emp').value='';
+  reloadDash();
+}
+
+function renderDash(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const act=actives(), ov=overdue(), retHoy=loans.filter(l=>l.estado==='devuelto'&&l.fechaRegreso>=today);
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-box"><div class="sv" style="color:var(--amber)">${act.length}</div><div class="sl2">Activos</div></div>
+    <div class="stat-box"><div class="sv" style="color:${ov.length>0?'var(--red)':'var(--dim)'}">${ov.length}</div><div class="sl2">Vencidos</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--green)">${retHoy.length}</div><div class="sl2">Dev. Hoy</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--dim)">${loans.length}</div><div class="sl2">Total</div></div>
+  `;
+
+  if(dashData.length===0){
+    document.getElementById('dash-list').innerHTML='<div style="text-align:center;padding:30px 0;color:var(--dim);font-size:13px">Sin registros para los filtros aplicados.</div>';
+    return;
+  }
+
+  const html = dashData.map(l=>{
+    const late=isLate(l);
+    const sc=l.estado==='devuelto'?'var(--green)':late?'var(--red)':'var(--amber)';
+    const sl=l.estado==='devuelto'?'Devuelto':late?'VENCIDO':'Activo';
+    const sb=l.estado==='devuelto'?'var(--greenbg)':late?'var(--redbg)':'var(--amberbg)';
+    const tr=l.fechaRegreso?['Regreso',fmt(l.fechaRegreso)]:['Transcurrido',`${hAgo(l.fechaSalida).toFixed(1)} hrs`];
+    const rows=[['Empleado',l.empleado],['No. Emp.',l.numeroEmpleado],['Depto.',l.departamento],['G. Salida',l.personalSeguridad],['Salida',fmt(l.fechaSalida)],tr,l.personalRegreso?['G. Regreso',l.personalRegreso]:null,['Folio',l.id]].filter(Boolean);
+    return `<div class="lc${l.estado==='devuelto'?' devuelto':late?' vencido':''}">
+      <div class="lc-head">
+        <div><div class="lc-eq">${esc(l.equipo)}</div><div class="lc-sal">${esc(l.salon)}${l.zona?` — Zona ${esc(l.zona)}`:''}</div></div>
+        <span class="badge" style="background:${sb};color:${sc};border:1px solid ${sc}44">${sl}</span>
+      </div>
+      <div class="lc-data">${rows.map(([k,v])=>`<div><span style="color:var(--dim)">${esc(k)}: </span><span style="color:${k==='Folio'?'var(--gold)':k==='Transcurrido'&&late?'var(--red)':'var(--text)'};${k==='Folio'?'font-weight:700':''}">${esc(v)}</span></div>`).join('')}</div>
+      ${l.estado==='activo'?`<div style="display:flex;gap:7px;margin-top:10px"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="dashReturn('${l.id}')">↩ Regreso</button><button class="btn btn-outline btn-sm" style="flex:1" onclick="openEdit('${l.id}')">✏ Editar</button></div>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('dash-list').innerHTML = html;
+}
+
+function dashReturn(id){
+  rFound=loans.find(l=>l.id===id);
+  nav('regreso');
+  setTimeout(()=>{
+    document.getElementById('ret-list').innerHTML='';
+    renderRetFound();
+  },200);
+}
+
+/* ── Edit Modal ─────────────────────────────────────────────────────────── */
+function openEdit(id){
+  const l=loans.find(x=>x.id===id);
+  if(!l) return;
+  editingId=id;
+  document.getElementById('modal-body').innerHTML=`
+    <div class="card card-s" style="padding:10px 13px;margin-bottom:14px">
+      <div style="font-size:10px;color:var(--gold);font-weight:700">${esc(l.id)}</div>
+      <div style="font-size:12px;color:var(--dim)">${esc(l.equipo)} · ${esc(l.salon)}</div>
+    </div>
+    ${['empleado','numeroEmpleado','departamento','personalSeguridad'].map(k=>`
+      <div class="field"><label>${{empleado:'Empleado',numeroEmpleado:'No. Empleado',departamento:'Departamento',personalSeguridad:'Guardia Salida'}[k]}</label>
+      <input class="inp" id="ed-${k}" value="${esc(l[k]||'')}"></div>
+    `).join('')}
+    <div class="field"><label>Estado</label>
+      <select class="inp" id="ed-estado"><option value="activo"${l.estado==='activo'?' selected':''}>Activo</option><option value="devuelto"${l.estado==='devuelto'?' selected':''}>Devuelto</option></select>
+    </div>
+  `;
+  document.getElementById('modal').style.display='flex';
+}
+
+function closeModal(){ document.getElementById('modal').style.display='none'; editingId=null; }
+
+async function saveEdit(){
+  if(!editingId) return;
+  const fields={
+    empleado:document.getElementById('ed-empleado').value.trim(),
+    numeroEmpleado:document.getElementById('ed-numeroEmpleado').value.trim(),
+    departamento:document.getElementById('ed-departamento').value.trim(),
+    personalSeguridad:document.getElementById('ed-personalSeguridad').value.trim(),
+    estado:document.getElementById('ed-estado').value,
+  };
+  loading('Guardando cambios…');
+  try {
+    await api('manualEdit',{id:editingId,fields});
+    loans=loans.map(l=>l.id===editingId?{...l,...fields}:l);
+    localSave(); closeModal(); reloadDash();
+    toast('✅ Registro actualizado.','ok');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+  doneLoading();
+}
+
+/* ── Export Excel ───────────────────────────────────────────────────────── */
+function exportExcel(){
+  if(!dashData.length){ toast('No hay datos para exportar.','warn'); return; }
+  const headers=['Folio','Salón','Zona','Equipo','Empleado','No. Empleado','Departamento',
+                 'Guardia Salida','Fecha Salida','Estado','Fecha Regreso','Guardia Regreso'];
+  const rows=dashData.map(l=>[
+    l.id, l.salon, l.zona||'', l.equipo, l.empleado, l.numeroEmpleado,
+    l.departamento, l.personalSeguridad, fmt(l.fechaSalida),
+    l.estado, l.fechaRegreso?fmt(l.fechaRegreso):'', l.personalRegreso||''
+  ]);
+
+  const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+
+  // Column widths
+  ws['!cols']=[{wch:22},{wch:16},{wch:6},{wch:36},{wch:22},{wch:14},{wch:14},{wch:22},{wch:18},{wch:10},{wch:18},{wch:22}];
+
+  // Header style (yellow background)
+  headers.forEach((_,i)=>{
+    const cell=XLSX.utils.encode_cell({r:0,c:i});
+    if(ws[cell]) ws[cell].s={fill:{fgColor:{rgb:'C9A84C'}},font:{bold:true,color:{rgb:'07091A'}}};
+  });
+
+  // Conditional formatting (status column = column I idx 9)
+  rows.forEach((r,i)=>{
+    const cell=XLSX.utils.encode_cell({r:i+1,c:9});
+    if(ws[cell]){
+      const color=r[9]==='devuelto'?'1A5C2E':r[9]==='activo'?'7D5C00':'7D0000';
+      ws[cell].s={font:{color:{rgb:color},bold:true}};
+    }
+  });
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Prestamos',ws);
+
+  // Summary sheet
+  const today=new Date(); today.setHours(0,0,0,0);
+  const sumRows=[
+    ['RESUMEN DE EXPORTACIÓN'],
+    ['Fecha de exportación', new Date().toLocaleString('es-MX')],
+    ['Total de registros', dashData.length],
+    ['Activos', dashData.filter(l=>l.estado==='activo').length],
+    ['Devueltos', dashData.filter(l=>l.estado==='devuelto').length],
+    ['Vencidos', dashData.filter(l=>l.estado==='activo'&&hAgo(l.fechaSalida)>=HORAS_MAX).length],
+  ];
+  const ws2=XLSX.utils.aoa_to_sheet(sumRows);
+  XLSX.utils.book_append_sheet(wb,'Resumen',ws2);
+
+  const fecha=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`Sheraton_Equipos_${fecha}.xlsx`);
+  toast('✅ Excel exportado correctamente.');
+}
+
+/* ── 2FA Setup ──────────────────────────────────────────────────────────── */
+async function showSetup2fa(){
+  const panel=document.getElementById('panel-setup2fa');
+  panel.style.display='block';
+  document.getElementById('qr-2fa').innerHTML='<div style="color:var(--dim);font-size:12px">Cargando QR…</div>';
+  try {
+    const r=await api('setup2fa',{});
+    document.getElementById('qr-2fa').innerHTML=`<img src="${r.qr}" width="220" height="220" style="border-radius:8px;margin:0 auto;display:block" alt="QR 2FA">`;
+    document.getElementById('secret-2fa').innerHTML=`<div style="font-size:10px;color:var(--dim);margin-bottom:4px">Clave manual (si no puedes escanear):</div><div style="font-family:monospace;font-size:13px;color:var(--gold);word-break:break-all;background:var(--surf);padding:8px;border-radius:5px">${r.secret}</div>`;
+  } catch(e){ document.getElementById('qr-2fa').innerHTML=`<div class="alert alert-red">Error: ${esc(e.message)}</div>`; }
+}
+
+/* ── Init ───────────────────────────────────────────────────────────────── */
+async function init(){
+  // Check URL param
+  const p=new URLSearchParams(window.location.search);
+  const v=p.get('v');
+
+  localLoad();
+  renderHome();
+
+  if(v==='solicitud'){ showView('sol1'); updateStepUI(1); }
+  else if(v==='regreso'){ showView('regreso'); setTimeout(renderRegreso,50); }
+  else showView('home');
+
+  // Sync in background
+  loadLoans(true);
+
+  // Validate config
+  if(SCRIPT_URL.includes('PEGA_AQUI')||API_KEY.includes('PEGA_AQUI')){
+    setTimeout(()=>{
+      toast('⚠ Configura SCRIPT_URL y API_KEY en el archivo index.html','warn');
+    },1500);
+  }
+
+  // Auto-refresh every 2 min
+  setInterval(()=>{ loadLoans(true); }, 120000);
+}
+
+init();
+</script>
+</body>
+</html>
