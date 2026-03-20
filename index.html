@@ -308,6 +308,44 @@ select.inp{appearance:none;cursor:pointer}
 
   /* bitacora/acta activation handled by .printing class */
 
+  /* Bitácora landscape @page handled via new window in _printBitacoraPages() */
+  /* Bitácora rules */
+  #bitacora-print-area { font-family: Arial, sans-serif; font-size: 7pt; color: #000; }
+    .bt-header { display:flex; align-items:center; gap:4mm; border-bottom:2pt solid #c9a84c; padding-bottom:3mm; margin-bottom:2mm; }
+    .bt-logo { width:14mm; height:14mm; border-radius:50%; }
+    .bt-hotel { font-size:12pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-dept { font-size:7pt; color:#7d6225; text-transform:uppercase; letter-spacing:.1em; display:block; }
+    .bt-doctitle { font-size:9pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-meta { display:flex; gap:4mm; margin-bottom:2mm; }
+    .bt-mitem { border:0.5pt solid #d0cdc5; border-radius:1.5mm; padding:1.5mm 2.5mm; flex:1; }
+    .bt-mlabel { font-size:6pt; color:#888; text-transform:uppercase; display:block; }
+    .bt-mline { border-bottom:0.8pt solid #07091a; min-height:5mm; display:block; margin-top:1mm; }
+    .bt-nota { background:#fdf8ee; border:0.5pt solid #c9a84c; padding:1.5mm 3mm; font-size:6.5pt; color:#7d6225; margin-bottom:2mm; }
+    .bt-turno { margin-bottom:2mm; }
+    .bt-turno:last-child { margin-bottom:0; }
+    .bt-thdr { display:flex; align-items:center; gap:8mm; padding:1.5mm 3mm; color:white; }
+    .bt-tnum { font-size:8.5pt; font-weight:bold; white-space:nowrap; min-width:45mm; }
+    .bt-tguardias { font-size:7pt; }
+    .bt-sublabels { display:flex; margin:1mm 0 0.5mm; }
+    .bt-lp { flex:1; font-size:6.5pt; font-weight:bold; color:#7d6225; padding-left:1mm; }
+    .bt-ld { flex:1; font-size:6.5pt; font-weight:bold; color:#1a7040; padding-left:3mm; }
+    .bt-tables { display:flex; gap:2mm; }
+    .bt-table { border-collapse:collapse; font-size:6.5pt; }
+    .bt-loan { flex:1; }
+    .bt-ret  { flex:1; }
+    .bt-table th { padding:1.5mm 2mm; text-align:center; font-size:6pt; font-weight:bold; }
+    .bt-loan thead { background:#c9a84c; color:#07091a; }
+    .bt-ret  thead { background:#27a85a; color:#fff; }
+    .bt-table td { padding:0 2mm; border:0.4pt solid #d0cdc5; height:8mm; vertical-align:middle; }
+    .bt-table tr:nth-child(even) td { background:#f7f6f2; }
+    .bt-sign { display:flex; align-items:stretch; gap:0; border:0.5pt solid #d0cdc5; min-height:10mm; }
+    .bt-obs { padding:2mm 3mm; font-size:6.5pt; font-weight:bold; color:#07091a; white-space:nowrap; display:flex; align-items:center; }
+    .bt-obs-space { flex:1; border-left:0.4pt solid #d0cdc5; border-right:0.4pt solid #d0cdc5; }
+    .bt-sig { padding:1.5mm 3mm; text-align:center; font-size:6.5pt; color:#07091a; min-width:36mm; display:flex; flex-direction:column; justify-content:center; }
+    .bt-sigline { border-bottom:1pt solid #07091a; margin:2mm 0 1mm; }
+    .bt-sep { border-bottom:0.7pt solid #d0cdc5; margin:2mm 0; }
+    .bt-footer { font-size:5.5pt; color:#aaa; text-align:center; border-top:0.5pt solid #d0cdc5; padding-top:1.5mm; margin-top:2mm; }
+
   .doc-page{ width:215.9mm; min-height:279.4mm; box-sizing:border-box; padding:12mm 14mm; page-break-after:always; font-family:Arial,sans-serif; font-size:9pt; color:#000; background:#fff; }
   .doc-page:last-child{ page-break-after:avoid; }
   .doc-header{ display:flex; align-items:center; gap:6mm; border-bottom:2pt solid #c9a84c; padding-bottom:5mm; margin-bottom:5mm; }
@@ -680,46 +718,6 @@ select.inp{appearance:none;cursor:pointer}
 <!-- ══ BITÁCORA DE TURNO (imprimible) ══ -->
 <div id="bitacora-print-area">
   <!-- Estilos exclusivos de impresión para la bitácora landscape -->
-  <style>
-  @media print {
-    @page { size: landscape; margin: 8mm; }
-    #bitacora-print-area { font-family: Arial, sans-serif; font-size: 7pt; color: #000; }
-    .bt-header { display:flex; align-items:center; gap:4mm; border-bottom:2pt solid #c9a84c; padding-bottom:3mm; margin-bottom:2mm; }
-    .bt-logo { width:14mm; height:14mm; border-radius:50%; }
-    .bt-hotel { font-size:12pt; font-weight:bold; color:#07091a; display:block; }
-    .bt-dept { font-size:7pt; color:#7d6225; text-transform:uppercase; letter-spacing:.1em; display:block; }
-    .bt-doctitle { font-size:9pt; font-weight:bold; color:#07091a; display:block; }
-    .bt-meta { display:flex; gap:4mm; margin-bottom:2mm; }
-    .bt-mitem { border:0.5pt solid #d0cdc5; border-radius:1.5mm; padding:1.5mm 2.5mm; flex:1; }
-    .bt-mlabel { font-size:6pt; color:#888; text-transform:uppercase; display:block; }
-    .bt-mline { border-bottom:0.8pt solid #07091a; min-height:5mm; display:block; margin-top:1mm; }
-    .bt-nota { background:#fdf8ee; border:0.5pt solid #c9a84c; padding:1.5mm 3mm; font-size:6.5pt; color:#7d6225; margin-bottom:2mm; }
-    .bt-turno { margin-bottom:2mm; }
-    .bt-turno:last-child { margin-bottom:0; }
-    .bt-thdr { display:flex; align-items:center; gap:8mm; padding:1.5mm 3mm; color:white; }
-    .bt-tnum { font-size:8.5pt; font-weight:bold; white-space:nowrap; min-width:45mm; }
-    .bt-tguardias { font-size:7pt; }
-    .bt-sublabels { display:flex; margin:1mm 0 0.5mm; }
-    .bt-lp { flex:1; font-size:6.5pt; font-weight:bold; color:#7d6225; padding-left:1mm; }
-    .bt-ld { flex:1; font-size:6.5pt; font-weight:bold; color:#1a7040; padding-left:3mm; }
-    .bt-tables { display:flex; gap:2mm; }
-    .bt-table { border-collapse:collapse; font-size:6.5pt; }
-    .bt-loan { flex:1; }
-    .bt-ret  { flex:1; }
-    .bt-table th { padding:1.5mm 2mm; text-align:center; font-size:6pt; font-weight:bold; }
-    .bt-loan thead { background:#c9a84c; color:#07091a; }
-    .bt-ret  thead { background:#27a85a; color:#fff; }
-    .bt-table td { padding:0 2mm; border:0.4pt solid #d0cdc5; height:8mm; vertical-align:middle; }
-    .bt-table tr:nth-child(even) td { background:#f7f6f2; }
-    .bt-sign { display:flex; align-items:stretch; gap:0; border:0.5pt solid #d0cdc5; min-height:10mm; }
-    .bt-obs { padding:2mm 3mm; font-size:6.5pt; font-weight:bold; color:#07091a; white-space:nowrap; display:flex; align-items:center; }
-    .bt-obs-space { flex:1; border-left:0.4pt solid #d0cdc5; border-right:0.4pt solid #d0cdc5; }
-    .bt-sig { padding:1.5mm 3mm; text-align:center; font-size:6.5pt; color:#07091a; min-width:36mm; display:flex; flex-direction:column; justify-content:center; }
-    .bt-sigline { border-bottom:1pt solid #07091a; margin:2mm 0 1mm; }
-    .bt-sep { border-bottom:0.7pt solid #d0cdc5; margin:2mm 0; }
-    .bt-footer { font-size:5.5pt; color:#aaa; text-align:center; border-top:0.5pt solid #d0cdc5; padding-top:1.5mm; margin-top:2mm; }
-  }
-  </style>
 
   <!-- Encabezado -->
   <div class="bt-header">
@@ -1502,19 +1500,48 @@ async function verify2FA(){
   try {
     const r=await api('verify2fa',{code});
     sessionToken=r.sessionToken;
-    sessionStorage.removeItem(SK_SES); // limpiar cualquier token viejo guardado
+    sessionStorage.removeItem(SK_SES);
     document.getElementById('gate-2fa').style.display='none';
     document.getElementById('dash').style.display='block';
     document.getElementById('fa-err').style.display='none';
     reloadDash();
-  } catch(_){ document.getElementById('fa-err').style.display='block'; }
+  } catch(e){
+    // Solo mostrar error de 2FA si es realmente un fallo de código (401)
+    // No limpiar sesión por errores de red o del servidor
+    document.getElementById('fa-err').textContent =
+      e.message?.includes('2FA')||e.message?.includes('incorrecto')
+        ? '⚠ Código incorrecto o expirado.'
+        : '⚠ Error de conexión — intenta de nuevo.';
+    document.getElementById('fa-err').style.display='block';
+  }
   doneLoading();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
 async function reloadDash(){
-  _refreshDeptosUI(); // keep filter in sync with current DEPTOS
+  _refreshDeptosUI();
   loading('Cargando historial…');
+  try {
+    const f=getFilters();
+    const r=await api('getHistory',{filters:f});
+    dashData=r.loans||[];
+    renderDashCards();
+    doneLoading();
+  } catch(e){
+    doneLoading();
+    // Si es error de sesión (403) → volver a pedir 2FA
+    if(e.message?.includes('Sesión')||e.message?.includes('2FA')||e.message?.includes('403')){
+      sessionToken=null;
+      document.getElementById('gate-2fa').style.display='block';
+      document.getElementById('dash').style.display='none';
+      document.getElementById('fa-err').textContent='⚠ Sesión expirada — ingresa tu código 2FA de nuevo.';
+      document.getElementById('fa-err').style.display='block';
+    } else {
+      // Error de servidor/red — mostrar en dashboard sin borrar sesión
+      toast('Error al cargar datos: '+e.message,'err');
+    }
+  }
+}
   try {
     const r=await api('getHistory',{filters:getFilters()});
     dashData=r.loans||[];
@@ -1886,9 +1913,37 @@ function renderInvTable(){
 // Inventario ahora se edita directamente en Google Sheets → hoja Inventario
 
 // ── Bitácora de turno ─────────────────────────────────────────────────────
-// ── Bitácora — imprime hoja de hoy en blanco ──────────────────────────────
+// ── Bitácora — imprime en ventana nueva (landscape) ──────────────────────
+function _printBitacoraPages(n){
+  const area = document.getElementById('bitacora-print-area');
+  const styleEl = document.querySelector('style');
+  const appStyles = styleEl ? styleEl.innerHTML : '';
+
+  // Build page content
+  const pageContent = area.innerHTML;
+  let pages = '';
+  for(let i=0; i<n; i++){
+    if(i>0) pages += '<div style="page-break-before:always"></div>';
+    pages += pageContent;
+  }
+
+  // Open new window with landscape orientation
+  const win = window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <style>
+      @page { size: landscape; margin: 8mm; }
+      body { margin:0; padding:0; font-family:Arial,sans-serif; font-size:7pt; color:#000; background:#fff; }
+      ${appStyles}
+    </style>
+  </head><body>${pages}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{ win.print(); win.close(); }, 600);
+}
+
 function printBitacoraDia(){
-  _doPrint('bitacora-print-area');
+  _printBitacoraPages(1);
 }
 
 // Alias para compatibilidad
@@ -1902,32 +1957,14 @@ function showLoteModal(){
   document.getElementById('lote-chips').innerHTML = opts.map(n=>
     `<button class="chip${_loteN===n?' on':''}" onclick="_loteN=${n};
       document.querySelectorAll('#lote-chips .chip').forEach(b=>b.classList.remove('on'));
-      this.classList.add('on')">${n} ${n===1?'hoja':n===7?'(1 semana)':n===14?'(2 sem.)':n===30?'(1 mes)':'hojas'}</button>`
+      this.classList.add('on')">${n===1?'1 hoja':n===7?'7 (semana)':n===14?'14 (2 sem.)':n===30?'30 (mes)':n+' hojas'}</button>`
   ).join('');
   document.getElementById('lote-modal').style.display='flex';
 }
 
 function printLote(){
   document.getElementById('lote-modal').style.display='none';
-  // Build N identical blank pages inside the bitacora area
-  // Each page is already designed as 1 day — just repeat it N times
-  const area = document.getElementById('bitacora-print-area');
-  // Save original content
-  const original = area.innerHTML;
-  // Get the repeatable content (everything after the <style> block)
-  const styleEnd = original.indexOf('</style>') + 8;
-  const styleBlock = original.substring(0, styleEnd);
-  const pageContent = original.substring(styleEnd);
-  // Build N copies with page breaks between them
-  let pages = styleBlock;
-  for(let i=0; i<_loteN; i++){
-    if(i>0) pages += '<div style="page-break-before:always"></div>';
-    pages += pageContent;
-  }
-  area.innerHTML = pages;
-  _doPrint('bitacora-print-area');
-  // Restore original after print dialog closes
-  setTimeout(()=>{ area.innerHTML = original; }, 1000);
+  _printBitacoraPages(_loteN);
 }
 
 // ── Acta de cambio de turno ───────────────────────────────────────────────
