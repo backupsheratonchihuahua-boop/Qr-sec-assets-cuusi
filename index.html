@@ -1916,30 +1916,61 @@ function renderInvTable(){
 // ── Bitácora — imprime en ventana nueva (landscape) ──────────────────────
 function _printBitacoraPages(n){
   const area = document.getElementById('bitacora-print-area');
-  const styleEl = document.querySelector('style');
-  const appStyles = styleEl ? styleEl.innerHTML : '';
-
-  // Build page content
   const pageContent = area.innerHTML;
+
   let pages = '';
   for(let i=0; i<n; i++){
     if(i>0) pages += '<div style="page-break-before:always"></div>';
     pages += pageContent;
   }
 
-  // Open new window with landscape orientation
-  const win = window.open('','_blank','width=900,height=700');
+  // CSS mínimo para la bitácora — completamente autocontenido, no toca la página principal
+  const css = `
+    @page { size: landscape; margin: 8mm; }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:0; font-family:Arial,sans-serif; font-size:7pt; color:#000; background:#fff; }
+    .bt-header { display:flex; align-items:center; gap:4mm; border-bottom:2pt solid #c9a84c; padding-bottom:3mm; margin-bottom:2mm; }
+    .bt-logo { width:14mm; height:14mm; border-radius:50%; }
+    .bt-hotel { font-size:12pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-dept { font-size:7pt; color:#7d6225; text-transform:uppercase; letter-spacing:.1em; display:block; }
+    .bt-doctitle { font-size:9pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-meta { display:flex; gap:4mm; margin-bottom:2mm; }
+    .bt-mitem { border:.5pt solid #d0cdc5; border-radius:1.5mm; padding:1.5mm 2.5mm; flex:1; }
+    .bt-mlabel { font-size:6pt; color:#888; text-transform:uppercase; display:block; }
+    .bt-mline { border-bottom:.8pt solid #07091a; min-height:5mm; display:block; margin-top:1mm; }
+    .bt-nota { background:#fdf8ee; border:.5pt solid #c9a84c; padding:1.5mm 3mm; font-size:6.5pt; color:#7d6225; margin-bottom:2mm; }
+    .bt-turno { margin-bottom:2mm; }
+    .bt-thdr { display:flex; align-items:center; gap:8mm; padding:1.5mm 3mm; color:white; }
+    .bt-tnum { font-size:8.5pt; font-weight:bold; white-space:nowrap; min-width:45mm; }
+    .bt-tguardias { font-size:7pt; }
+    .bt-sublabels { display:flex; margin:1mm 0 .5mm; }
+    .bt-lp { flex:1; font-size:6.5pt; font-weight:bold; color:#7d6225; padding-left:1mm; }
+    .bt-ld { flex:1; font-size:6.5pt; font-weight:bold; color:#1a7040; padding-left:3mm; }
+    .bt-tables { display:flex; gap:2mm; }
+    .bt-table { border-collapse:collapse; font-size:6.5pt; flex:1; }
+    .bt-table th { padding:1.5mm 2mm; text-align:center; font-size:6pt; font-weight:bold; }
+    .bt-loan thead { background:#c9a84c; color:#07091a; }
+    .bt-ret  thead { background:#27a85a; color:#fff; }
+    .bt-table td { padding:0 2mm; border:.4pt solid #d0cdc5; height:8mm; vertical-align:middle; }
+    .bt-table tr:nth-child(even) td { background:#f7f6f2; }
+    .bt-sign { display:flex; align-items:stretch; border:.5pt solid #d0cdc5; min-height:10mm; }
+    .bt-obs { padding:2mm 3mm; font-size:6.5pt; font-weight:bold; color:#07091a; white-space:nowrap; display:flex; align-items:center; }
+    .bt-obs-space { flex:1; border-left:.4pt solid #d0cdc5; border-right:.4pt solid #d0cdc5; }
+    .bt-sig { padding:1.5mm 3mm; text-align:center; font-size:6.5pt; color:#07091a; min-width:36mm; display:flex; flex-direction:column; justify-content:center; }
+    .bt-sigline { border-bottom:1pt solid #07091a; margin:2mm 0 1mm; }
+    .bt-sep { border-bottom:.7pt solid #d0cdc5; margin:2mm 0; }
+    .bt-footer { font-size:5.5pt; color:#aaa; text-align:center; border-top:.5pt solid #d0cdc5; padding-top:1.5mm; margin-top:2mm; }
+  `;
+
+  const win = window.open('', '_blank', 'width=960,height=700');
   win.document.write(`<!DOCTYPE html><html><head>
     <meta charset="UTF-8">
-    <style>
-      @page { size: landscape; margin: 8mm; }
-      body { margin:0; padding:0; font-family:Arial,sans-serif; font-size:7pt; color:#000; background:#fff; }
-      ${appStyles}
-    </style>
+    <title>Bitácora — Sheraton CHH</title>
+    <style>${css}</style>
   </head><body>${pages}</body></html>`);
   win.document.close();
   win.focus();
-  setTimeout(()=>{ win.print(); win.close(); }, 600);
+  setTimeout(()=>{ win.print(); win.close(); }, 700);
 }
 
 function printBitacoraDia(){
