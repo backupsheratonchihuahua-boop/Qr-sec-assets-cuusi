@@ -890,7 +890,7 @@ let fTipo='',fSalon='',fZona='',fCaja=null,fKit='',fApu=false,fEvento='',fEmplea
 let rFound = null;
 let _autoRefresh;
 
-const fmt  = ts => new Date(ts).toLocaleString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+const fmt  = ts => new Date(ts).toLocaleString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
 const esc  = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const actives  = () => loans.filter(l => l.estado === 'activo');
 const lsave    = () => { try{ localStorage.setItem(SK, JSON.stringify(loans)); }catch(_){} };
@@ -1463,7 +1463,7 @@ function exportExcel(){
   rows.forEach((r,i)=>{ const c=XLSX.utils.encode_cell({r:i+1,c:11}); if(ws[c]) ws[c].s={font:{bold:true,color:{rgb:r[11]==='devuelto'?'1A5C2E':'7D5C00'}}}; });
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Prestamos',ws);
-  const ws2=XLSX.utils.aoa_to_sheet([['RESUMEN'],['Fecha',new Date().toLocaleString('es-MX')],['Total',dashData.length],['Activos',dashData.filter(l=>l.estado==='activo').length],['Devueltos',dashData.filter(l=>l.estado==='devuelto').length],['Con apuntador',dashData.filter(l=>l.apuntador).length]]);
+  const ws2=XLSX.utils.aoa_to_sheet([['RESUMEN'],['Fecha',new Date().toLocaleString('es-MX',{hour12:false})],['Total',dashData.length],['Activos',dashData.filter(l=>l.estado==='activo').length],['Devueltos',dashData.filter(l=>l.estado==='devuelto').length],['Con apuntador',dashData.filter(l=>l.apuntador).length]]);
   XLSX.utils.book_append_sheet(wb,'Resumen',ws2);
   XLSX.writeFile(wb,'Sheraton_Equipos_'+new Date().toISOString().slice(0,10)+'.xlsx');
   toast('✅ Excel exportado.');
@@ -1474,7 +1474,7 @@ function printReport(){
   if(!dashData.length){ toast('No hay datos para imprimir.','warn'); return; }
 
   document.getElementById('pr-fecha').textContent =
-    'Impreso el ' + new Date().toLocaleString('es-MX',{dateStyle:'full',timeStyle:'short'});
+    'Impreso el ' + new Date().toLocaleString('es-MX',{dateStyle:'full',timeStyle:'short',hour12:false});
 
   const f=getFilters();
   const parts=[];
