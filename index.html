@@ -554,11 +554,14 @@ select.inp{appearance:none;cursor:pointer}
 
       <!-- Inventario panel -->
       <div id="panel-inventory" class="card" style="display:none;margin-top:14px">
-        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;font-weight:700">📦 Inventario — Stock por Salón/Zona</div>
-        <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.5">
-          Define cuántos equipos hay físicamente en cada salón. Esto se usa para generar el Acta de Turno y detectar discrepancias.
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-weight:700">📦 Inventario — Estado de las 27 Cajas</div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:10px;line-height:1.6">
+          Estado en tiempo real de cada caja. Se actualiza automáticamente al registrar préstamos y devoluciones.<br>
+          <span style="color:var(--amber)">⚠ Requiere que el <strong>Code.gs actualizado</strong> esté desplegado y que hayas ejecutado <strong>initialSetup()</strong> en Apps Script.</span>
         </div>
-        <div id="inv-table-wrap"></div>
+        <div id="inv-table-wrap">
+          <div class="alert alert-blue">⏳ Cargando inventario desde Google Sheets…</div>
+        </div>
         <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="document.getElementById('panel-inventory').style.display='none'">Cerrar</button>
       </div>
 
@@ -1538,8 +1541,19 @@ async function loadInventory(){
 
 function showInventory(){
   document.getElementById('panel-inventory').style.display='block';
-  document.getElementById('inv-save-msg').style.display='none';
-  renderInvTable();
+  // Fetch fresh from server each time panel opens
+  document.getElementById('inv-table-wrap').innerHTML=
+    '<div class="alert alert-blue">⏳ Cargando inventario desde Google Sheets…</div>';
+  loadInventory().then(()=>{
+    renderInvTable();
+  }).catch(e=>{
+    document.getElementById('inv-table-wrap').innerHTML=
+      `<div class="alert alert-red">❌ No se pudo cargar el inventario.<br>
+       <strong>Verifica que:</strong><br>
+       1. El Code.gs actualizado está desplegado como Web App<br>
+       2. Ejecutaste <strong>initialSetup()</strong> en Apps Script<br>
+       Detalle: ${esc(e.message||'Error desconocido')}</div>`;
+  });
 }
 
 function renderInvTable(){
