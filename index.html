@@ -389,32 +389,50 @@ select.inp{appearance:none;cursor:pointer}
   <!-- ═══ SOL 1 ═══ -->
   <div id="v-sol1" class="view">
     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Selección de Equipo</div>
-    <div style="font-size:11px;color:var(--dim);margin-bottom:16px">Selecciona el salón y zona.</div>
-    <div class="field">
-      <label>Salón <span class="req">*</span></label>
-      <select class="inp" id="sel-salon" onchange="onSalon()">
-        <option value="">— Selecciona el salón —</option>
-        <option>Salón Diamante</option><option>Salón Rubí</option>
-        <option>Salón Esmeralda</option><option>Salón Zafiro</option>
-      </select>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">¿Qué tipo de equipo necesitas?</div>
+
+    <!-- Tipo selector -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <button id="tipo-salon-btn" onclick="selectTipo('salon')" style="background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s">
+        <div style="font-size:22px;margin-bottom:6px">🎪</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Equipo de Salón</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:3px">Kit asignado a un salón específico</div>
+      </button>
+      <button id="tipo-comp-btn" onclick="selectTipo('compartido')" style="background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s">
+        <div style="font-size:22px;margin-bottom:6px">🔧</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Equipo Compartido</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:3px">Convertidores, apuntadores, hubs…</div>
+      </button>
     </div>
-    <div id="zona-f" style="display:none" class="field">
-      <label>Zona <span class="req">*</span></label>
-      <div class="chips chips2" id="zona-c"></div>
-    </div>
-    <div id="kit-display" style="display:none"></div>
-    <div id="apu-f" style="display:none">
-      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;font-weight:600">Equipo adicional</div>
-      <div class="apu-toggle" id="apu-toggle" onclick="toggleApu()">
-        <div class="apu-check" id="apu-check"></div>
-        <div class="apu-info">
-          <div class="apu-name">🔦 Apuntador láser</div>
-          <div class="apu-sub">Selecciona si también necesitas el apuntador</div>
-        </div>
+
+    <!-- Sección Salón -->
+    <div id="sec-salon" style="display:none">
+      <div class="field">
+        <label>Salón <span class="req">*</span></label>
+        <select class="inp" id="sel-salon" onchange="onSalon()">
+          <option value="">— Selecciona el salón —</option>
+          <option>Salón Diamante</option><option>Salón Rubí</option>
+          <option>Salón Esmeralda</option><option>Salón Zafiro</option>
+          <option>Salón Bar Candiles</option>
+        </select>
       </div>
+      <div id="zona-f" style="display:none" class="field">
+        <label>Zona <span class="req">*</span></label>
+        <div class="chips chips2" id="zona-c"></div>
+      </div>
+      <div id="kit-display" style="display:none"></div>
     </div>
+
+    <!-- Sección Equipo Compartido -->
+    <div id="sec-comp" style="display:none">
+      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-weight:600">
+        Selecciona el equipo — toca para elegir
+      </div>
+      <div id="comp-grid" style="display:flex;flex-direction:column;gap:7px"></div>
+    </div>
+
     <div id="avail-err" class="alert alert-red" style="display:none"></div>
-    <button class="btn btn-gold btn-full" onclick="step(2)" style="margin-top:4px">Continuar →</button>
+    <button class="btn btn-gold btn-full" onclick="step(2)" style="margin-top:10px">Continuar →</button>
   </div>
 
   <!-- ═══ SOL 2 ═══ -->
@@ -721,8 +739,9 @@ select.inp{appearance:none;cursor:pointer}
     <div class="doc-section-title">1. Conteo físico de equipos al cambio de turno</div>
     <table class="doc-inv-table">
       <thead><tr>
-        <th style="width:20%;text-align:left">Salón / Zona</th>
-        <th>Kit de equipos</th>
+        <th style="width:6%;text-align:center">Caja</th>
+        <th style="width:18%;text-align:left">Nombre / Equipo</th>
+        <th>Contenido</th>
         <th>Apuntador</th>
         <th>¿Físicamente presente?</th>
         <th>Folio préstamo activo</th>
@@ -795,14 +814,38 @@ const SCRIPT_URL = _CFG.SCRIPT_URL;
 const API_KEY    = _CFG.API_KEY;
 
 const SALONES = {
-  'Salón Diamante':  { zonas:['A1','B','B1','C'], kit:'Kit de proyección — Control de pantalla + Control de proyector', kitIconos:['🖥️','📽️'], hasApuntador:true },
-  'Salón Rubí':      { zonas:null,                kit:'Kit de proyección — Control de pantalla + Control de proyector', kitIconos:['🖥️','📽️'], hasApuntador:true },
-  'Salón Esmeralda': { zonas:null,                kit:'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico', kitIconos:['📽️','📡'], hasApuntador:false },
-  'Salón Zafiro':    { zonas:null,                kit:'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico', kitIconos:['📽️','📡'], hasApuntador:false },
+  'Salón Diamante':    { zonas:['A1','B','B1','C'], kit:'Control Proyector + Control Pantalla Proyección',          kitIconos:['📽️','🖥️'], hasApuntador:false, cajas:{A1:1,B:2,B1:3,C:4} },
+  'Salón Rubí':        { zonas:null,                kit:'Control de Proyector',                                     kitIconos:['📽️'],       hasApuntador:false, caja:12 },
+  'Salón Esmeralda':   { zonas:null,                kit:'Control Proyector + Control Pantalla Proyección + Cable USB',kitIconos:['📽️','🖥️','🔌'], hasApuntador:false, caja:5 },
+  'Salón Zafiro':      { zonas:null,                kit:'Control Proyector + Control Pantalla Proyección + Cable USB',kitIconos:['📽️','🖥️','🔌'], hasApuntador:false, caja:6 },
+  'Salón Bar Candiles': { zonas:null,               kit:'Control Roku + Control Barra Bose + Control TV Phillips',  kitIconos:['📺','🔊','📡'], hasApuntador:false, caja:23 },
 };
+
+// Equipos compartidos (pool libre — no fijos a un salón)
+const EQUIPOS_COMPARTIDOS = [
+  { caja:7,  nombre:'Convertidor VGA-HDMI A', contenido:'Steren 208-144 + Cable USB + Conector Eléctrico a USB',             piezas:3 },
+  { caja:8,  nombre:'Convertidor VGA-HDMI B', contenido:'Steren 208-144 + Cable USB + Conector Eléctrico a USB',             piezas:3 },
+  { caja:13, nombre:'USB-C a HDMI A',          contenido:'Convertidor USB-C a HDMI para Mac',                                 piezas:1 },
+  { caja:14, nombre:'USB-C a HDMI B',          contenido:'Convertidor USB-C a HDMI para Mac',                                 piezas:1 },
+  { caja:15, nombre:'Thunderbolt Serial A',    contenido:'Convertidor Serial a USB-C',                                        piezas:1 },
+  { caja:16, nombre:'Thunderbolt Serial B',    contenido:'Convertidor Serial a USB-C',                                        piezas:1 },
+  { caja:17, nombre:'USB Hub A',               contenido:'Hub USB 4 puertos Steren',                                          piezas:1 },
+  { caja:18, nombre:'USB Hub B',               contenido:'Hub USB 4 puertos Steren',                                          piezas:1 },
+  { caja:19, nombre:'Apuntador Logitech A',    contenido:'Apuntador Clicker Logitech R400',                                   piezas:1 },
+  { caja:20, nombre:'Apuntador Logitech B',    contenido:'Apuntador Clicker Logitech R400',                                   piezas:1 },
+  { caja:21, nombre:'Apuntador Logitech C',    contenido:'Apuntador Clicker Logitech R400',                                   piezas:1 },
+  { caja:22, nombre:'Extensor HDMI x UTP',     contenido:'Extensor HDMI por Cable de Ethernet',                               piezas:1 },
+  { caja:24, nombre:'Convertidor VGA-HDMI C',  contenido:'Steren 208-144 + Cable USB + Conector Eléctrico a USB + Cable 3.5mm', piezas:1 },
+  { caja:25, nombre:'Apuntador S10',           contenido:'Apuntador Clicker S10',                                             piezas:1 },
+  { caja:26, nombre:'Decibelímetro A',         contenido:'Decibelímetro Steren Her-404',                                      piezas:1 },
+  { caja:27, nombre:'Decibelímetro B',         contenido:'Decibelímetro Steren Her-403 en Estuche',                           piezas:1 },
+];
+
 const KIT_ITEMS = {
-  'Kit de proyección — Control de pantalla + Control de proyector': ['Control de pantalla de proyección','Control de proyector'],
-  'Kit de proyección inalámbrica — Control de proyector + Dispositivo inalámbrico': ['Control de proyector','Dispositivo de proyección inalámbrico'],
+  'Control Proyector + Control Pantalla Proyección':              ['Control de Proyector','Control de Pantalla de Proyección'],
+  'Control Proyector + Control Pantalla Proyección + Cable USB':  ['Control de Proyector','Control de Pantalla de Proyección','Cable USB'],
+  'Control de Proyector':                                         ['Control de Proyector'],
+  'Control Roku + Control Barra Bose + Control TV Phillips':      ['Control Roku','Control Barra Bose','Control TV Phillips'],
 };
 const DEPTOS = ['Mantenimiento','Banquetes','Ventas','Sistemas'];
 const SK     = 'shr_loans_v31';
@@ -813,7 +856,7 @@ let sessionToken = sessionStorage.getItem(SK_SES) || null;
 let curView      = 'home';
 let dashData     = [];
 let editingId    = null;
-let fSalon='',fZona='',fKit='',fApu=false,fEvento='',fEmpleado='',fNumEmp='',fDepto='',fGuardia='';
+let fTipo='',fSalon='',fZona='',fCaja=null,fKit='',fApu=false,fEvento='',fEmpleado='',fNumEmp='',fDepto='',fGuardia='';
 let rFound = null;
 let _autoRefresh;
 
@@ -939,8 +982,10 @@ function renderHome() {
   if(act.length>0){
     html=`<div class="card" style="padding:12px 14px"><div style="font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">📋 Equipos actualmente prestados (${act.length})</div>`;
     act.forEach(l=>{
+      const cajaLabel=l.caja?`<span style="color:var(--gold);font-weight:700">Caja ${l.caja}</span> — `:'';
+      const salLabel=l.salon?esc(l.salon)+(l.zona?' — Zona '+esc(l.zona):''):'Equipo Compartido';
       html+=`<div style="font-size:12px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
-        <div style="font-weight:600;color:var(--text)">${esc(l.salon)}${l.zona?' — Zona '+esc(l.zona):''}</div>
+        <div style="font-weight:600;color:var(--text)">${cajaLabel}${salLabel}</div>
         <div style="color:var(--dim);margin-top:2px">${esc(l.evento||'Sin nombre de evento')} · ${esc(l.empleado)}</div>
         <div style="color:var(--goldD);font-size:10px;margin-top:1px">${l.id}</div>
       </div>`;
@@ -951,16 +996,70 @@ function renderHome() {
 }
 
 // ── SOLICITUD ─────────────────────────────────────────────────────────────
-function resetForm(){ fSalon=fZona=fKit=fEvento=fEmpleado=fNumEmp=fDepto=fGuardia=''; fApu=false; }
+function resetForm(){ fTipo=''; fSalon=fZona=fKit=fEvento=fEmpleado=fNumEmp=fDepto=fGuardia=''; fCaja=null; fApu=false; }
+
+// ── Tipo selector ─────────────────────────────────────────────────────────
+function selectTipo(tipo){
+  fTipo=tipo; fSalon=''; fZona=''; fCaja=null; fKit=''; fApu=false;
+  document.getElementById('avail-err').style.display='none';
+
+  const btnS=document.getElementById('tipo-salon-btn');
+  const btnC=document.getElementById('tipo-comp-btn');
+  const secS=document.getElementById('sec-salon');
+  const secC=document.getElementById('sec-comp');
+
+  if(tipo==='salon'){
+    btnS.style.background='rgba(201,168,76,.12)'; btnS.style.borderColor='var(--gold)';
+    btnC.style.background='var(--surf)';          btnC.style.borderColor='var(--border)';
+    secS.style.display='block'; secC.style.display='none';
+    document.getElementById('sel-salon').value='';
+    document.getElementById('zona-f').style.display='none';
+    document.getElementById('kit-display').style.display='none';
+  } else {
+    btnC.style.background='rgba(201,168,76,.12)'; btnC.style.borderColor='var(--gold)';
+    btnS.style.background='var(--surf)';          btnS.style.borderColor='var(--border)';
+    secS.style.display='none'; secC.style.display='block';
+    renderCompGrid();
+  }
+}
+
+function renderCompGrid(){
+  const busyCajas=new Set(loans.filter(l=>l.estado==='activo'&&l.caja).map(l=>l.caja));
+  document.getElementById('comp-grid').innerHTML=EQUIPOS_COMPARTIDOS.map(eq=>{
+    const busy=busyCajas.has(eq.caja);
+    const sel=fCaja===eq.caja;
+    const loan=busy?loans.find(l=>l.estado==='activo'&&l.caja===eq.caja):null;
+    return `<button onclick="${busy?'':'selComp('+eq.caja+')'}" style="
+      background:${sel?'rgba(201,168,76,.14)':busy?'var(--redbg)':'var(--surf)'};
+      border:1px solid ${sel?'var(--gold)':busy?'var(--red)':'var(--border)'};
+      border-left:4px solid ${sel?'var(--gold)':busy?'var(--red)':'var(--border)'};
+      border-radius:7px;padding:11px 13px;text-align:left;cursor:${busy?'default':'pointer'};
+      transition:all .18s;width:100%">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;font-weight:700;color:var(--gold)">Caja ${eq.caja}</span>
+        ${busy?'<span style="font-size:10px;font-weight:700;color:var(--red)">⚠ PRESTADA</span>':sel?'<span style="font-size:10px;font-weight:700;color:var(--gold)">✓ SELECCIONADA</span>':''}
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:3px">${esc(eq.nombre)}</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(eq.contenido)}</div>
+      ${busy&&loan?`<div style="font-size:10px;color:var(--red);margin-top:3px">→ ${esc(loan.empleado)} · ${esc(loan.evento||'Sin evento')} · ${loan.id}</div>`:''}
+    </button>`;
+  }).join('');
+}
+
+function selComp(caja){
+  fCaja=caja;
+  const eq=EQUIPOS_COMPARTIDOS.find(e=>e.caja===caja);
+  if(eq){ fKit=eq.contenido; fSalon=''; fZona=''; }
+  renderCompGrid();
+}
 
 function onSalon(){
-  fSalon=document.getElementById('sel-salon').value; fZona=''; fApu=false;
+  fSalon=document.getElementById('sel-salon').value; fZona=''; fApu=false; fCaja=null;
   const s=SALONES[fSalon];
   document.getElementById('zona-f').style.display=(s&&s.zonas)?'block':'none';
-  document.getElementById('apu-f').style.display=(s&&s.hasApuntador)?'block':'none';
   document.getElementById('avail-err').style.display='none';
   if(s&&s.zonas) renderZonaChips();
-  updateApuUI(); updateKitDisplay();
+  updateKitDisplay();
 }
 
 function renderZonaChips(){
@@ -975,16 +1074,15 @@ function updateKitDisplay(){
   const s=SALONES[fSalon]; const el=document.getElementById('kit-display');
   if(!s){ el.style.display='none'; return; }
   fKit=s.kit;
-  const items=KIT_ITEMS[s.kit]||[];
+  // Resolve caja for this salon/zona
+  if(fSalon==='Salón Diamante' && fZona && s.cajas) fCaja=s.cajas[fZona]||null;
+  else fCaja=s.caja||null;
+  const items=KIT_ITEMS[s.kit]||[s.kit];
   el.style.display='block';
-  el.innerHTML=`<div class="kit-box"><div class="kit-box-title">📦 Kit incluido en este préstamo</div>${items.map((item,i)=>`<div class="kit-item"><span style="font-size:16px;flex-shrink:0">${s.kitIconos[i]||'📦'}</span><span>${esc(item)}</span></div>`).join('')}</div>`;
-}
-
-function toggleApu(){ fApu=!fApu; updateApuUI(); }
-function updateApuUI(){
-  const t=document.getElementById('apu-toggle'); const c=document.getElementById('apu-check');
-  if(!t) return;
-  t.classList.toggle('on',fApu); c.textContent=fApu?'✓':'';
+  el.innerHTML=`<div class="kit-box">
+    <div class="kit-box-title">📦 Kit incluido${fCaja?' — Caja '+fCaja:''}</div>
+    ${items.map((item,i)=>`<div class="kit-item"><span style="font-size:16px;flex-shrink:0">${s.kitIconos[i]||'📦'}</span><span>${esc(item)}</span></div>`).join('')}
+  </div>`;
 }
 
 function checkAvail(){
@@ -1014,17 +1112,24 @@ function updateStepUI(curr){
 
 function step(to){
   if(to===2){
-    if(!fSalon){ toast('Selecciona el salón.','err'); return; }
-    if(fSalon==='Salón Diamante'&&!fZona){ toast('Selecciona la zona del salón.','err'); return; }
-    const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
-    if(busy){ toast('⚠ Este equipo ya está prestado. Debe devolverse primero.','err'); return; }
+    if(!fTipo){ toast('Selecciona el tipo de equipo.','err'); return; }
+    if(fTipo==='salon'){
+      if(!fSalon){ toast('Selecciona el salón.','err'); return; }
+      if(fSalon==='Salón Diamante'&&!fZona){ toast('Selecciona la zona del salón.','err'); return; }
+      const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
+      if(busy){ toast('⚠ Este equipo ya está prestado. Debe devolverse primero.','err'); return; }
+    } else {
+      if(!fCaja){ toast('Selecciona el equipo a prestar.','err'); return; }
+    }
     renderDeptoChips();
     const zona=fSalon==='Salón Diamante'?` — Zona ${fZona}`:'';
+    const cajaLabel=fCaja?`<div style="font-size:12px;color:var(--gold);font-weight:700;margin-top:2px">📦 Caja ${fCaja}</div>`:'';
+    const salLabel=fTipo==='salon'?`<div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(fSalon)}${esc(zona)}</div>`:'';
     document.getElementById('s2-sum').innerHTML=`
       <div style="font-size:10px;color:var(--dim)">Equipo a prestar:</div>
-      <div style="font-weight:600;color:var(--gold);font-size:12px;margin-top:2px">📦 ${esc(fKit)}</div>
-      ${fApu?'<div style="font-size:11px;color:var(--amber);margin-top:3px">🔦 + Apuntador láser incluido</div>':''}
-      <div style="font-size:11px;color:var(--dim);margin-top:2px">${esc(fSalon)}${esc(zona)}</div>
+      ${cajaLabel}
+      <div style="font-weight:600;color:var(--text);font-size:12px;margin-top:2px">${esc(fKit)}</div>
+      ${salLabel}
     `;
     document.getElementById('i-evento').value=fEvento;
     document.getElementById('i-empleado').value=fEmpleado;
@@ -1039,11 +1144,20 @@ function step(to){
     if(!fNumEmp){ toast('Ingresa el número de empleado.','err'); return; }
     if(!fDepto){ toast('Selecciona el departamento.','err'); return; }
     const zona=fSalon==='Salón Diamante'?` — Zona ${fZona}`:'';
-    const items=[['Salón',fSalon+zona],['Evento',fEvento],['Kit de equipos',fKit],['Apuntador láser',fApu?'Sí, incluido':'No'],['Empleado',fEmpleado],['No. Empleado',fNumEmp],['Departamento',fDepto]];
+    const items=[
+      fCaja?['No. Caja','Caja '+fCaja]:null,
+      ['Tipo',fTipo==='salon'?'Equipo de Salón':'Equipo Compartido'],
+      fSalon?['Salón',fSalon+zona]:null,
+      ['Kit de equipos',fKit],
+      ['Evento',fEvento],['Empleado',fEmpleado],['No. Empleado',fNumEmp],['Departamento',fDepto]
+    ].filter(Boolean);
     document.getElementById('s3-sum').innerHTML=`<div style="font-size:10px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Resumen del préstamo</div>${items.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('')}`;
     document.getElementById('i-guardia').value=fGuardia;
   }
-  if(to===1){ document.getElementById('sel-salon').value=fSalon; onSalon(); if(fZona) setTimeout(renderZonaChips,50); }
+  if(to===1){
+    if(fTipo) selectTipo(fTipo);
+    if(fTipo==='salon'&&fSalon){ document.getElementById('sel-salon').value=fSalon; onSalon(); if(fZona) setTimeout(renderZonaChips,50); }
+  }
   updateStepUI(to); showView('sol'+to);
 }
 
@@ -1055,7 +1169,7 @@ async function submitSolicitud(){
 
   loading('Registrando préstamo…');
   try {
-    const loan={salon:fSalon,zona:fZona||null,kit:fKit,apuntador:fApu,evento:fEvento,empleado:fEmpleado,numeroEmpleado:fNumEmp,departamento:fDepto,personalSeguridad:fGuardia,fechaSalida:Date.now()};
+    const loan={caja:fCaja,tipo:fTipo,salon:fSalon||null,zona:fZona||null,kit:fKit,apuntador:fApu,evento:fEvento,empleado:fEmpleado,numeroEmpleado:fNumEmp,departamento:fDepto,personalSeguridad:fGuardia,fechaSalida:Date.now()};
     const r=await api('addLoan',{loan});
     // ── Actualización inmediata ───────────────────────────────────────
     loans.unshift(r.loan); lsave();
@@ -1063,7 +1177,14 @@ async function submitSolicitud(){
 
     const cf=r.loan, zona=cf.zona?` — Zona ${cf.zona}`:'';
     document.getElementById('cf-folio').innerHTML=`<div class="folio-lbl">Número de Folio</div><div class="folio-num">${esc(cf.id)}</div><div style="font-size:10px;color:var(--dim);margin-top:3px">Guarda este folio para la devolución</div>`;
-    const rows=[['Salón',cf.salon+zona],['Evento',cf.evento],['Kit de equipos',cf.kit],['Apuntador',cf.apuntador?'✓ Incluido':'No'],['Empleado',cf.empleado],['No. Empleado',cf.numeroEmpleado],['Departamento',cf.departamento],['Guardia (salida)',cf.personalSeguridad],['Fecha y hora',fmt(cf.fechaSalida)]];
+    const rows=[
+      cf.caja?['No. Caja','Caja '+cf.caja]:null,
+      ['Tipo',cf.tipo==='salon'?'Equipo de Salón':'Equipo Compartido'],
+      cf.salon?['Salón',cf.salon+zona]:null,
+      ['Kit de equipos',cf.kit],['Evento',cf.evento],
+      ['Empleado',cf.empleado],['No. Empleado',cf.numeroEmpleado],
+      ['Departamento',cf.departamento],['Guardia (salida)',cf.personalSeguridad],['Fecha y hora',fmt(cf.fechaSalida)]
+    ].filter(Boolean);
     document.getElementById('cf-detail').innerHTML=rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('');
     showView('confirmacion');
   } catch(e){ toast('Error: '+e.message,'err'); }
@@ -1081,10 +1202,12 @@ function renderRegreso(){
     let html=`<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700">Préstamos activos — toca para seleccionar</div>`;
     act.forEach(l=>{
       const zona=l.zona?` — Zona ${l.zona}`:'';
+      const cajaTag=l.caja?`<span style="font-weight:700;color:var(--gold)">Caja ${l.caja} — </span>`:'';
+      const salTag=l.salon?esc(l.salon)+esc(zona):'Equipo Compartido';
       html+=`<button class="asel" onclick="pickLoan('${l.id}')">
-        <div style="font-weight:600;font-size:13px;color:var(--text)">${esc(l.salon)}${esc(zona)}</div>
+        <div style="font-weight:600;font-size:13px;color:var(--text)">${cajaTag}${salTag}</div>
         <div style="font-size:12px;color:var(--amber);margin-top:2px">🎫 ${esc(l.evento||'Sin nombre de evento')}</div>
-        <div style="font-size:11px;color:var(--dim);margin-top:2px">📦 ${esc(l.kit)}${l.apuntador?' · 🔦 Apuntador':''}</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:2px">📦 ${esc(l.kit)}</div>
         <div style="font-size:11px;color:var(--dim)">${esc(l.empleado)} · ${esc(l.departamento)}</div>
         <div style="font-size:10px;color:var(--gold);margin-top:3px">${l.id}</div>
       </button>`;
@@ -1233,10 +1356,20 @@ function renderDash(){
     const sl=l.estado==='devuelto'?'Devuelto':'Activo';
     const sb=l.estado==='devuelto'?'var(--greenbg)':'var(--amberbg)';
     const zona=l.zona?` — Zona ${l.zona}`:'';
-    const rows=[['Evento',l.evento||'Sin nombre'],['Kit',l.kit],['Apuntador',l.apuntador?'✓ Sí':'—'],['Empleado',l.empleado],['No. Emp.',l.numeroEmpleado],['Depto.',l.departamento],['Guardia salida',l.personalSeguridad],['Fecha salida',fmt(l.fechaSalida)],...(l.fechaRegreso?[['Fecha regreso',fmt(l.fechaRegreso)],['Guardia regreso',l.personalRegreso||'—']]:[]),['Folio',l.id]];
+    const cajaDisp=l.caja?`Caja ${l.caja} — `:'';
+    const salDisp=l.salon?esc(l.salon)+esc(zona):'Equipo Compartido';
+    const rows=[
+      l.caja?['No. Caja','Caja '+l.caja]:null,
+      ['Tipo',l.tipo==='salon'?'Salón':'Compartido'],
+      ['Evento',l.evento||'Sin nombre'],['Kit',l.kit],
+      ['Empleado',l.empleado],['No. Emp.',l.numeroEmpleado],['Depto.',l.departamento],
+      ['Guardia salida',l.personalSeguridad],['Fecha salida',fmt(l.fechaSalida)],
+      ...(l.fechaRegreso?[['Fecha regreso',fmt(l.fechaRegreso)],['Guardia regreso',l.personalRegreso||'—']]:[]),
+      ['Folio',l.id]
+    ].filter(Boolean);
     return `<div class="lc ${l.estado}">
       <div class="lc-head">
-        <div><div class="lc-eq">${esc(l.salon)}${esc(zona)}</div><div class="lc-sal">🎫 ${esc(l.evento||'Sin nombre de evento')}</div></div>
+        <div><div class="lc-eq">${cajaDisp}${salDisp}</div><div class="lc-sal">🎫 ${esc(l.evento||'Sin nombre de evento')}</div></div>
         <span class="badge" style="background:${sb};color:${sc};border:1px solid ${sc}44">${sl}</span>
       </div>
       <div class="lc-data">${rows.map(([k,v])=>`<div><span style="color:var(--dim)">${esc(k)}: </span><span style="color:${k==='Folio'?'var(--gold)':'var(--text)'};${k==='Folio'?'font-weight:700':''}">${esc(v)}</span></div>`).join('')}</div>
@@ -1284,8 +1417,8 @@ async function saveEdit(){
 // ── Export Excel ──────────────────────────────────────────────────────────
 function exportExcel(){
   if(!dashData.length){ toast('No hay datos para exportar.','warn'); return; }
-  const headers=['Folio','Salón','Zona','Kit de Equipos','Apuntador','Evento','Empleado','No. Empleado','Departamento','Guardia Salida','Fecha Salida','Estado','Fecha Regreso','Guardia Regreso'];
-  const rows=dashData.map(l=>[l.id,l.salon,l.zona||'',l.kit,l.apuntador?'Sí':'No',l.evento||'',l.empleado,l.numeroEmpleado,l.departamento,l.personalSeguridad,fmt(l.fechaSalida),l.estado,l.fechaRegreso?fmt(l.fechaRegreso):'',l.personalRegreso||'']);
+  const headers=['Folio','No. Caja','Tipo','Salón','Zona','Kit de Equipos','Apuntador','Evento','Empleado','No. Empleado','Departamento','Guardia Salida','Fecha Salida','Estado','Fecha Regreso','Guardia Regreso'];
+  const rows=dashData.map(l=>[l.id,l.caja||'',l.tipo||'salon',l.salon||'',l.zona||'',l.kit,l.apuntador?'Sí':'No',l.evento||'',l.empleado,l.numeroEmpleado,l.departamento,l.personalSeguridad,fmt(l.fechaSalida),l.estado,l.fechaRegreso?fmt(l.fechaRegreso):'',l.personalRegreso||'']);
   const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
   ws['!cols']=[{wch:22},{wch:16},{wch:6},{wch:40},{wch:10},{wch:30},{wch:22},{wch:13},{wch:14},{wch:22},{wch:18},{wch:10},{wch:18},{wch:22}];
   headers.forEach((_,i)=>{ const c=XLSX.utils.encode_cell({r:0,c:i}); if(ws[c]) ws[c].s={fill:{fgColor:{rgb:'C9A84C'}},font:{bold:true,color:{rgb:'07091A'}}}; });
@@ -1408,11 +1541,15 @@ function showInventory(){
 function renderInvTable(){
   const rows = inventory.map((it,i)=>`
     <tr>
+      <td style="font-size:12px;color:var(--text);padding:8px 6px;text-align:center;font-weight:700;color:var(--gold)">
+        ${it.caja||'—'}
+      </td>
       <td style="font-size:12px;color:var(--text);padding:8px 6px">
-        <strong>${esc(it.salon)}</strong>${it.zona?' — Zona '+esc(it.zona):''}
+        <strong>${esc(it.nombre||it.salon||'')}</strong>${it.zona?' — Zona '+esc(it.zona):''}
+        <div style="font-size:10px;color:var(--dim)">${esc(it.tipo||'')}</div>
       </td>
       <td style="padding:8px 6px">
-        <input class="inp" value="${esc(it.kit)}" onchange="inventory[${i}].kit=this.value" style="font-size:11px;padding:6px 10px">
+        <input class="inp" value="${esc(it.contenido||it.kit||'')}" onchange="inventory[${i}].contenido=this.value;inventory[${i}].kit=this.value" style="font-size:11px;padding:6px 10px">
       </td>
       <td style="text-align:center;padding:8px 6px">
         <button onclick="inventory[${i}].apuntador=!inventory[${i}].apuntador;renderInvTable()"
@@ -1429,8 +1566,9 @@ function renderInvTable(){
   document.getElementById('inv-table-wrap').innerHTML=`
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Salón / Zona</th>
-        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Kit de equipos</th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border)">Caja</th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Nombre / Equipo</th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Contenido</th>
         <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border)">Apuntador</th>
         <th style="font-size:10px;padding:6px;border-bottom:1px solid var(--border)"></th>
       </tr></thead>
@@ -1473,7 +1611,7 @@ function printBitacora(){
   let bodyHtml = act.map(l=>`
     <tr>
       <td>${fmt(l.fechaSalida).split(' ')[1]||'—'}</td>
-      <td>${esc(l.salon)}${l.zona?' Z.'+esc(l.zona):''}</td>
+      <td>${l.caja?'C.'+l.caja+' ':''}${esc(l.salon||'Compartido')}${l.zona?' Z.'+esc(l.zona):''}</td>
       <td>${esc(l.evento||'—')}</td>
       <td style="font-size:7pt">${esc((l.kit||'').split('—')[0])}</td>
       <td>${esc(l.empleado)}</td>
@@ -1527,13 +1665,14 @@ async function printActa(){
   const act = actives();
 
   // Inventory table — cross-reference with active loans
-  const invHtml = inventory.map(it=>{
+  const invHtml = inventory.filter(it=>it.tipo!=='baja').map(it=>{
     const zona = it.zona?' — Zona '+it.zona:'';
-    const loan = act.find(l=>l.salon===it.salon&&(it.zona?l.zona===it.zona:!l.zona));
+    const loan = act.find(l=>it.caja?(l.caja===it.caja):(l.salon===it.salon&&(it.zona?l.zona===it.zona:!l.zona)));
     const prestado = !!loan;
     return `<tr>
-      <td class="label">${esc(it.salon)}${esc(zona)}</td>
-      <td style="text-align:left;font-size:7.5pt">${esc(it.kit)}</td>
+      <td class="label" style="text-align:center;font-weight:700;color:#c9a84c">${it.caja||'—'}</td>
+      <td class="label">${esc(it.nombre||it.salon||'')}${esc(zona)}</td>
+      <td style="text-align:left;font-size:7.5pt">${esc(it.contenido||it.kit||'')}</td>
       <td>${it.apuntador?'✓':'—'}</td>
       <td style="color:${prestado?'#856404':'#0a3622'};font-weight:bold">
         ${prestado?'<span class="status-activo">PRESTADO</span>':'<span class="status-devuelto">EN SEGURIDAD</span>'}
