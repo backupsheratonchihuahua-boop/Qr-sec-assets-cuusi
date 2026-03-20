@@ -559,11 +559,7 @@ select.inp{appearance:none;cursor:pointer}
           Define cuántos equipos hay físicamente en cada salón. Esto se usa para generar el Acta de Turno y detectar discrepancias.
         </div>
         <div id="inv-table-wrap"></div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn btn-gold btn-sm" onclick="saveInventoryUI()">💾 Guardar Inventario</button>
-          <button class="btn btn-outline btn-sm" onclick="document.getElementById('panel-inventory').style.display='none'">Cerrar</button>
-        </div>
-        <div id="inv-save-msg" style="display:none;margin-top:8px" class="alert alert-green">✅ Inventario guardado correctamente.</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="document.getElementById('panel-inventory').style.display='none'">Cerrar</button>
       </div>
 
       <div id="panel-setup2fa" class="card" style="display:none;margin-top:14px;text-align:center">
@@ -1024,9 +1020,15 @@ function selectTipo(tipo){
 }
 
 function renderCompGrid(){
-  const busyCajas=new Set(loans.filter(l=>l.estado==='activo'&&l.caja).map(l=>l.caja));
+  // Use inventory sheet state if available, otherwise fall back to actives()
+  const busyCajas=new Set(
+    inventory.length
+      ? inventory.filter(it=>it.estado==='PRESTADO').map(it=>it.caja)
+      : loans.filter(l=>l.estado==='activo'&&l.caja).map(l=>l.caja)
+  );
   document.getElementById('comp-grid').innerHTML=EQUIPOS_COMPARTIDOS.map(eq=>{
-    const busy=busyCajas.has(eq.caja);
+    const invRow = inventory.find(it=>it.caja===eq.caja);
+    const busy = busyCajas.has(eq.caja);
     const sel=fCaja===eq.caja;
     const loan=busy?loans.find(l=>l.estado==='activo'&&l.caja===eq.caja):null;
     return `<button onclick="${busy?'':'selComp('+eq.caja+')'}" style="
@@ -1041,7 +1043,7 @@ function renderCompGrid(){
       </div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:3px">${esc(eq.nombre)}</div>
       <div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(eq.contenido)}</div>
-      ${busy&&loan?`<div style="font-size:10px;color:var(--red);margin-top:3px">→ ${esc(loan.empleado)} · ${esc(loan.evento||'Sin evento')} · ${loan.id}</div>`:''}
+      ${busy&&loan?`<div style="font-size:10px;color:var(--red);margin-top:3px">→ ${esc(loan.empleado)} · ${esc(loan.evento||'Sin evento')} · ${esc(folioActivo)}</div>`:busy?`<div style="font-size:10px;color:var(--red);margin-top:3px">Folio: ${esc(folioActivo)}</div>`:''}
     </button>`;
   }).join('');
 }
@@ -1528,8 +1530,10 @@ const DEFAULT_INV = [
 ];
 
 async function loadInventory(){
-  try { const r=await api('getInventory',{}); inventory=r.inventory||DEFAULT_INV; }
-  catch(_){ inventory=DEFAULT_INV; }
+  try {
+    const r=await api('getInventory',{});
+    inventory=r.inventory||[];
+  } catch(_){ inventory=[]; }
 }
 
 function showInventory(){
@@ -1539,60 +1543,49 @@ function showInventory(){
 }
 
 function renderInvTable(){
-  const rows = inventory.map((it,i)=>`
-    <tr>
-      <td style="font-size:12px;color:var(--text);padding:8px 6px;text-align:center;font-weight:700;color:var(--gold)">
-        ${it.caja||'—'}
+  if(!inventory.length){
+    document.getElementById('inv-table-wrap').innerHTML=
+      '<div class="alert alert-amber">Cargando inventario desde Sheets… si tarda, verifica tu conexión.</div>';
+    return;
+  }
+  const rows = inventory.map((it,i)=>{
+    const eColor=it.estado==='PRESTADO'?'var(--amber)':it.estado==='FUERA DE SERVICIO'?'var(--red)':'var(--green)';
+    const eBg=it.estado==='PRESTADO'?'var(--amberbg)':it.estado==='FUERA DE SERVICIO'?'var(--redbg)':'var(--greenbg)';
+    return `<tr>
+      <td style="font-size:13px;text-align:center;padding:8px 6px;font-weight:700;color:var(--gold)">${it.caja||'—'}</td>
+      <td style="font-size:11px;color:var(--text);padding:8px 6px">
+        <strong>${esc(it.nombre||'')}</strong>
+        <div style="font-size:10px;color:var(--dim)">${esc(it.tipo||'')}${it.zona?' · Zona '+esc(it.zona):''}</div>
       </td>
-      <td style="font-size:12px;color:var(--text);padding:8px 6px">
-        <strong>${esc(it.nombre||it.salon||'')}</strong>${it.zona?' — Zona '+esc(it.zona):''}
-        <div style="font-size:10px;color:var(--dim)">${esc(it.tipo||'')}</div>
+      <td style="font-size:11px;color:var(--dim);padding:8px 6px">${esc(it.contenido||'')}</td>
+      <td style="padding:8px 4px;text-align:center">
+        <span style="background:${eBg};color:${eColor};border:1px solid ${eColor}44;border-radius:12px;padding:3px 8px;font-size:10px;font-weight:700">${it.estado||'—'}</span>
+        ${it.folioActivo?`<div style="font-size:9px;color:var(--dim);margin-top:2px">${esc(it.folioActivo)}</div>`:''}
       </td>
-      <td style="padding:8px 6px">
-        <input class="inp" value="${esc(it.contenido||it.kit||'')}" onchange="inventory[${i}].contenido=this.value;inventory[${i}].kit=this.value" style="font-size:11px;padding:6px 10px">
-      </td>
-      <td style="text-align:center;padding:8px 6px">
-        <button onclick="inventory[${i}].apuntador=!inventory[${i}].apuntador;renderInvTable()"
-          style="background:${it.apuntador?'var(--green)':'var(--surf)'};border:1px solid ${it.apuntador?'var(--green)':'var(--border)'};color:${it.apuntador?'#fff':'var(--dim)'};border-radius:5px;padding:5px 12px;cursor:pointer;font-size:12px">
-          ${it.apuntador?'✓ Sí':'— No'}
-        </button>
-      </td>
-      <td style="text-align:center;padding:8px 6px">
-        <button onclick="removeInvRow(${i})" style="background:transparent;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:11px">✕</button>
-      </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 
   document.getElementById('inv-table-wrap').innerHTML=`
+    <div style="font-size:11px;color:var(--dim);margin-bottom:8px">
+      Esta tabla se actualiza automáticamente en Google Sheets cada vez que se registra un préstamo o devolución.
+      Para editar contenido o tipo, hazlo directamente en la hoja <strong style="color:var(--gold)">Inventario</strong> del Spreadsheet.
+    </div>
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border)">Caja</th>
-        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Nombre / Equipo</th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border);width:40px">Caja</th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Equipo</th>
         <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Contenido</th>
-        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border)">Apuntador</th>
-        <th style="font-size:10px;padding:6px;border-bottom:1px solid var(--border)"></th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border)">Estado</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <button onclick="addInvRow()" class="btn btn-outline btn-sm" style="margin-top:8px;width:100%">+ Agregar fila</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-outline btn-sm" onclick="loadInventory().then(renderInvTable)">↺ Actualizar</button>
+    </div>
   `;
 }
 
-function removeInvRow(i){ inventory.splice(i,1); renderInvTable(); }
-function addInvRow(){
-  inventory.push({id:'new'+Date.now(),salon:'',zona:'',kit:'',apuntador:false});
-  renderInvTable();
-}
-
-async function saveInventoryUI(){
-  loading('Guardando inventario…');
-  try {
-    await api('saveInventory',{inventory});
-    document.getElementById('inv-save-msg').style.display='block';
-    toast('✅ Inventario guardado.');
-  } catch(e){ toast('Error: '+e.message,'err'); }
-  doneLoading();
-}
+// Inventario ahora se edita directamente en Google Sheets → hoja Inventario
 
 // ── Bitácora de turno ─────────────────────────────────────────────────────
 function printBitacora(){
