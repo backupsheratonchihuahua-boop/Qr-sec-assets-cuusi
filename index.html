@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -556,8 +559,7 @@ select.inp{appearance:none;cursor:pointer}
       <div id="panel-inventory" class="card" style="display:none;margin-top:14px">
         <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-weight:700">📦 Inventario — Estado de las 27 Cajas</div>
         <div style="font-size:11px;color:var(--dim);margin-bottom:10px;line-height:1.6">
-          Estado en tiempo real de cada caja. Se actualiza automáticamente al registrar préstamos y devoluciones.<br>
-          <span style="color:var(--amber)">⚠ Requiere que el <strong>Code.gs actualizado</strong> esté desplegado y que hayas ejecutado <strong>initialSetup()</strong> en Apps Script.</span>
+          Estado en tiempo real de cada caja. Se actualiza automáticamente al registrar préstamos y devoluciones.
         </div>
         <div id="inv-table-wrap">
           <div class="alert alert-blue">⏳ Cargando inventario desde Google Sheets…</div>
@@ -848,10 +850,14 @@ const KIT_ITEMS = {
 };
 const DEPTOS = ['Mantenimiento','Banquetes','Ventas','Sistemas'];
 const SK     = 'shr_loans_v31';
-const SK_SES = 'shr_sess_v31';
+const SK_SES = 'shr_sess_v31'; // ya no se usa para guardar — solo referencia histórica
 
+// ── Token 2FA solo en memoria — se limpia al refrescar la página ──────────
+// NO usar sessionStorage: queremos que cada vez que se abre/refresca la app
+// el guardia deba autenticarse nuevamente con su código 2FA.
 let loans        = [];
-let sessionToken = sessionStorage.getItem(SK_SES) || null;
+let inventory    = [];
+let sessionToken = null;
 let curView      = 'home';
 let dashData     = [];
 let editingId    = null;
@@ -1280,7 +1286,8 @@ async function verify2FA(){
   loading('Verificando 2FA…');
   try {
     const r=await api('verify2fa',{code});
-    sessionToken=r.sessionToken; sessionStorage.setItem(SK_SES,sessionToken);
+    sessionToken=r.sessionToken;
+    sessionStorage.removeItem(SK_SES); // limpiar cualquier token viejo guardado
     document.getElementById('gate-2fa').style.display='none';
     document.getElementById('dash').style.display='block';
     document.getElementById('fa-err').style.display='none';
@@ -1521,16 +1528,6 @@ async function showSetup2fa(){
 }
 
 // ── Inventory ─────────────────────────────────────────────────────────────
-let inventory = [];
-const DEFAULT_INV = [
-  { id:'dia1', salon:'Salón Diamante', zona:'A1', kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
-  { id:'dia2', salon:'Salón Diamante', zona:'B',  kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
-  { id:'dia3', salon:'Salón Diamante', zona:'B1', kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
-  { id:'dia4', salon:'Salón Diamante', zona:'C',  kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
-  { id:'rub1', salon:'Salón Rubí',      zona:null, kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
-  { id:'esm1', salon:'Salón Esmeralda', zona:null, kit:'Kit inalámbrico (proyector+dispositivo)', apuntador:false },
-  { id:'zaf1', salon:'Salón Zafiro',    zona:null, kit:'Kit inalámbrico (proyector+dispositivo)', apuntador:false },
-];
 
 async function loadInventory(){
   try {
@@ -1580,10 +1577,6 @@ function renderInvTable(){
   }).join('');
 
   document.getElementById('inv-table-wrap').innerHTML=`
-    <div style="font-size:11px;color:var(--dim);margin-bottom:8px">
-      Esta tabla se actualiza automáticamente en Google Sheets cada vez que se registra un préstamo o devolución.
-      Para editar contenido o tipo, hazlo directamente en la hoja <strong style="color:var(--gold)">Inventario</strong> del Spreadsheet.
-    </div>
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
         <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border);width:40px">Caja</th>
