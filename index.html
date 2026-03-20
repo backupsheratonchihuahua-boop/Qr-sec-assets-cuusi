@@ -180,10 +180,16 @@ select.inp{appearance:none;cursor:pointer}
   *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
   body{ margin:0; padding:0; }
 
-  #app,#loader,#toast,#modal,#print-area,#bitacora-print-area,#acta-print-area{ display:none !important; }
+  /* Ocultar TODO por defecto al imprimir */
+  #app,#loader,#toast,#modal,
+  #print-area,#qr-print-area,
+  #bitacora-print-area,#acta-print-area{ display:none !important; }
 
-  /* ── QR: páginas completas con logo ── */
-  #qr-print-area{ display:block !important; margin:0; padding:0; }
+  /* Solo mostrar el área activada con clase .printing */
+  #print-area.printing         { display:block !important; padding:12px 16px; }
+  #qr-print-area.printing      { display:block !important; margin:0; padding:0; }
+  #bitacora-print-area.printing{ display:block !important; }
+  #acta-print-area.printing    { display:block !important; }
 
   .qr-page{
     width:215.9mm; height:279.4mm;
@@ -287,7 +293,7 @@ select.inp{appearance:none;cursor:pointer}
   }
 
   /* ── Reporte tabular ── */
-  #print-area.visible{ display:block !important; padding:12px 16px; }
+  /* #print-area activation handled by .printing class */
   .pr-header{ text-align:center; border-bottom:2px solid #c9a84c; padding-bottom:10px; margin-bottom:14px; }
   .pr-title{ font-size:18px; font-weight:bold; color:#07091a; }
   .pr-sub{ font-size:11px; color:#555; margin-top:3px; }
@@ -300,9 +306,7 @@ select.inp{appearance:none;cursor:pointer}
   .pr-badge.devuelto{ background:#d1e7dd; color:#0a3622; }
   .pr-footer{ margin-top:12px; font-size:8px; color:#888; text-align:right; border-top:1px solid #ddd; padding-top:6px; }
 
-  /* ── Bitácora de turno ── */
-  #bitacora-print-area{ display:block !important; }
-  #acta-print-area{ display:block !important; }
+  /* bitacora/acta activation handled by .printing class */
 
   .doc-page{ width:215.9mm; min-height:279.4mm; box-sizing:border-box; padding:12mm 14mm; page-break-after:always; font-family:Arial,sans-serif; font-size:9pt; color:#000; background:#fff; }
   .doc-page:last-child{ page-break-after:avoid; }
@@ -526,7 +530,7 @@ select.inp{appearance:none;cursor:pointer}
             <select class="inp" id="f-estado"><option value="">Todos</option><option value="activo">Activo</option><option value="devuelto">Devuelto</option></select>
           </div>
           <div class="field" style="margin-bottom:8px"><label>Departamento</label>
-            <select class="inp" id="f-depto"><option value="">Todos</option><option>Mantenimiento</option><option>Banquetes</option><option>Ventas</option><option>Sistemas</option></select>
+            <select class="inp" id="f-depto"><option value="">Todos</option></select>
           </div>
           <div class="field" style="margin-bottom:8px"><label>Salón</label>
             <select class="inp" id="f-salon"><option value="">Todos</option><option>Salón Diamante</option><option>Salón Rubí</option><option>Salón Esmeralda</option><option>Salón Zafiro</option></select>
@@ -551,6 +555,7 @@ select.inp{appearance:none;cursor:pointer}
         <button class="btn btn-outline btn-sm" onclick="printBitacora()" style="color:var(--amber);border-color:rgba(230,126,34,.4)">📋 Bitácora de Turno</button>
         <button class="btn btn-outline btn-sm" onclick="printActa()" style="color:var(--green);border-color:rgba(39,168,90,.4)">📝 Acta de Turno</button>
         <button class="btn btn-outline btn-sm" onclick="showInventory()" style="color:var(--gold);border-color:rgba(201,168,76,.4)">📦 Inventario</button>
+        <button class="btn btn-outline btn-sm" onclick="showDeptos()" style="color:var(--blue);border-color:rgba(90,138,224,.4)">🏢 Departamentos</button>
         <button class="btn btn-outline btn-sm" onclick="reloadDash()">↺ Actualizar</button>
         <button class="btn btn-outline btn-sm" style="color:var(--blue);border-color:rgba(90,138,224,.4)" onclick="showSetup2fa()">🔑 Config 2FA</button>
       </div>
@@ -565,6 +570,26 @@ select.inp{appearance:none;cursor:pointer}
           <div class="alert alert-blue">⏳ Cargando inventario desde Google Sheets…</div>
         </div>
         <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="document.getElementById('panel-inventory').style.display='none'">Cerrar</button>
+      </div>
+
+      <!-- Departamentos panel -->
+      <div id="panel-deptos" class="card" style="display:none;margin-top:14px">
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-weight:700">🏢 Departamentos y Proveedores</div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.5">
+          Agrega departamentos internos o proveedores externos que soliciten equipo.<br>
+          <span style="color:var(--amber)">Estos aparecerán como opciones al registrar un préstamo.</span>
+        </div>
+        <div id="deptos-list" style="margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="inp" id="new-depto-inp" type="text" placeholder="Ej. Maxima, CINÉPOLIS, etc." style="flex:1">
+          <button class="btn btn-gold btn-sm" onclick="addDepto()">+ Agregar</button>
+        </div>
+        <div id="depto-err" class="alert alert-red" style="display:none;margin-top:8px"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-gold btn-sm" onclick="saveDeptosUI()" style="flex:1">💾 Guardar cambios</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('panel-deptos').style.display='none'">Cerrar</button>
+        </div>
+        <div id="depto-ok" class="alert alert-green" style="display:none;margin-top:8px">✅ Departamentos guardados correctamente.</div>
       </div>
 
       <div id="panel-setup2fa" class="card" style="display:none;margin-top:14px;text-align:center">
@@ -848,7 +873,7 @@ const KIT_ITEMS = {
   'Control de Proyector':                                         ['Control de Proyector'],
   'Control Roku + Control Barra Bose + Control TV Phillips':      ['Control Roku','Control Barra Bose','Control TV Phillips'],
 };
-const DEPTOS = ['Mantenimiento','Banquetes','Ventas','Sistemas'];
+let DEPTOS = ['Mantenimiento','Banquetes','Ventas','Sistemas','Maxima']; // se actualiza desde el servidor
 const SK     = 'shr_loans_v31';
 const SK_SES = 'shr_sess_v31'; // ya no se usa para guardar — solo referencia histórica
 
@@ -1298,6 +1323,7 @@ async function verify2FA(){
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
 async function reloadDash(){
+  _refreshDeptosUI(); // keep filter in sync with current DEPTOS
   loading('Cargando historial…');
   try {
     const r=await api('getHistory',{filters:getFilters()});
@@ -1527,6 +1553,81 @@ async function showSetup2fa(){
   } catch(e){ document.getElementById('qr-2fa').innerHTML=`<div class="alert alert-red">Error: ${esc(e.message)}</div>`; }
 }
 
+// ── Departments ───────────────────────────────────────────────────────────
+async function loadDeptos(){
+  try {
+    const r = await api('getDeptos',{});
+    if(r.deptos && r.deptos.length) {
+      DEPTOS = r.deptos;
+      _refreshDeptosUI();
+    }
+  } catch(_){} // keep defaults on error
+}
+
+function _refreshDeptosUI(){
+  // Update filter dropdown in dashboard
+  const sel = document.getElementById('f-depto');
+  if(sel){
+    sel.innerHTML = '<option value="">Todos</option>' +
+      DEPTOS.map(d=>`<option>${esc(d)}</option>`).join('');
+  }
+  // Re-render chips if on step 2
+  if(curView==='sol2') renderDeptoChips();
+}
+
+function showDeptos(){
+  document.getElementById('panel-deptos').style.display='block';
+  document.getElementById('panel-inventory').style.display='none';
+  document.getElementById('depto-err').style.display='none';
+  document.getElementById('depto-ok').style.display='none';
+  renderDeptosList();
+}
+
+function renderDeptosList(){
+  document.getElementById('deptos-list').innerHTML = DEPTOS.map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="flex:1;font-size:13px;color:var(--text)">${esc(d)}</span>
+      <span style="font-size:10px;color:var(--dim);background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:2px 8px">
+        ${i < 4 ? 'Interno' : 'Externo'}
+      </span>
+      ${i >= 4 ? `<button onclick="removeDepto(${i})" style="background:transparent;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:11px">✕</button>` : '<span style="width:40px"></span>'}
+    </div>
+  `).join('');
+}
+
+function addDepto(){
+  const inp = document.getElementById('new-depto-inp');
+  const val = inp.value.trim();
+  const errEl = document.getElementById('depto-err');
+  if(!val){ errEl.textContent='Ingresa el nombre del departamento o proveedor.'; errEl.style.display='block'; return; }
+  if(DEPTOS.map(d=>d.toLowerCase()).includes(val.toLowerCase())){
+    errEl.textContent='Este departamento ya existe en la lista.'; errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  DEPTOS.push(val);
+  inp.value='';
+  renderDeptosList();
+  _refreshDeptosUI();
+}
+
+function removeDepto(i){
+  if(i < 4){ toast('Los departamentos internos no se pueden eliminar.','warn'); return; }
+  DEPTOS.splice(i,1);
+  renderDeptosList();
+  _refreshDeptosUI();
+}
+
+async function saveDeptosUI(){
+  loading('Guardando departamentos…');
+  try {
+    await api('saveDeptos',{deptos:DEPTOS});
+    document.getElementById('depto-ok').style.display='block';
+    document.getElementById('depto-err').style.display='none';
+    toast('✅ Departamentos guardados.');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+  doneLoading();
+}
+
 // ── Inventory ─────────────────────────────────────────────────────────────
 
 async function loadInventory(){
@@ -1713,18 +1814,19 @@ async function printActa(){
 
 // ── Generic print helper ──────────────────────────────────────────────────
 function _doPrint(areaId){
-  ['print-area','qr-print-area','bitacora-print-area','acta-print-area'].forEach(id=>{
-    document.getElementById(id).style.display='none';
-    document.getElementById(id).classList.remove('visible');
+  const ALL=['print-area','qr-print-area','bitacora-print-area','acta-print-area'];
+  // Remove .printing from all areas — ensures only ONE is active
+  ALL.forEach(id=>{
+    const el=document.getElementById(id);
+    el.classList.remove('printing');
   });
-  document.getElementById(areaId).style.display='block';
-  if(areaId==='print-area') document.getElementById(areaId).classList.add('visible');
+  // Activate only the target area
+  document.getElementById(areaId).classList.add('printing');
   setTimeout(()=>{
     window.print();
     setTimeout(()=>{
-      document.getElementById(areaId).style.display='none';
-      document.getElementById(areaId).classList.remove('visible');
-    },500);
+      document.getElementById(areaId).classList.remove('printing');
+    },600);
   },350);
 }
 
@@ -1738,7 +1840,8 @@ async function init(){
 
   // Sync inicial en background
   await syncNow(true);
-  loadInventory(); // cargar inventario en background
+  loadInventory();  // cargar inventario en background
+  loadDeptos();     // cargar departamentos en background
 
   // Auto-sync cada 60 segundos en background (sin loader, silencioso)
   _autoRefresh = setInterval(()=>syncNow(true), 60000);
