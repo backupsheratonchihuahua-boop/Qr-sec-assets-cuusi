@@ -218,7 +218,7 @@ select.inp{appearance:none;cursor:pointer}
   }
   .qr-dept{
     font-family:Georgia,serif;
-    font-size:12pt;
+    font-size:28pt;
     color:#c9a84c !important;
     text-transform:uppercase;
     letter-spacing:.2em;
@@ -264,11 +264,11 @@ select.inp{appearance:none;cursor:pointer}
   .qr-divider-dim{ background:#1c2a50 !important; }
 
   .qr-action-sub{
-    font-size:14pt; color:#ede0c8 !important;
+    font-size:20pt; color:#ede0c8 !important;
     display:block; margin-bottom:4mm; line-height:1.5;
   }
   .qr-steps{
-    font-size:13pt; color:#8a7f6a !important;
+    font-size:18pt; color:#8a7f6a !important;
     line-height:2.1; text-align:center;
   }
 
@@ -1173,32 +1173,43 @@ function printQR(){
   const solImg = document.getElementById('qr-sol-print');
   const retImg = document.getElementById('qr-ret-print');
 
-  // Negro puro sobre blanco — máximo contraste para impresión
-  solImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
-  retImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
+  // Limpiar handlers anteriores para evitar disparos múltiples
+  solImg.onload = null; retImg.onload = null;
+  solImg.onerror = null; retImg.onerror = null;
 
-  // Ocultar reporte, mostrar solo QR
+  // Negro puro sobre blanco — máximo contraste para impresión
+  const solSrc = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
+  const retSrc = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
+
   document.getElementById('print-area').style.display = 'none';
   document.getElementById('print-area').classList.remove('visible');
 
-  let loaded = 0;
-  const onLoad = () => {
-    loaded++;
-    if(loaded < 2) return;
+  // Flag de una sola ejecución — evita que onload + complete disparen varias veces
+  let fired = false;
+  let loadCount = 0;
+
+  const tryPrint = () => {
+    if(fired) return;
+    loadCount++;
+    if(loadCount < 2) return;
+    fired = true;
+    solImg.onload = null; retImg.onload = null;
+    solImg.onerror = null; retImg.onerror = null;
     document.getElementById('qr-print-area').style.display = 'block';
     setTimeout(()=>{
       window.print();
-      document.getElementById('qr-print-area').style.display = 'none';
+      setTimeout(()=>{ document.getElementById('qr-print-area').style.display = 'none'; }, 500);
     }, 400);
   };
-  // Resetear handlers
-  solImg.onload = onLoad;
-  retImg.onload = onLoad;
-  solImg.onerror = onLoad; // fallback si falla la carga
-  retImg.onerror = onLoad;
-  // Si ya estaban cargadas en caché
-  if(solImg.complete && solImg.naturalWidth) onLoad();
-  if(retImg.complete && retImg.naturalWidth) onLoad();
+
+  // Asignar nuevos src — si cambia, onload se disparará una vez por imagen
+  solImg.onload  = tryPrint;
+  solImg.onerror = tryPrint;
+  retImg.onload  = tryPrint;
+  retImg.onerror = tryPrint;
+
+  solImg.src = solSrc;
+  retImg.src = retSrc;
 }
 
 // ── 2FA Setup ─────────────────────────────────────────────────────────────
