@@ -395,51 +395,38 @@ select.inp{appearance:none;cursor:pointer}
 
   <!-- ═══ SOL 1 ═══ -->
   <div id="v-sol1" class="view">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Selección de Equipo</div>
-    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">¿Qué tipo de equipo necesitas?</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:2px">Selección de Equipos</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">Selecciona todo lo que necesitas — puedes combinar kit de salón con equipo adicional.</div>
 
-    <!-- Tipo selector -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <button id="tipo-salon-btn" onclick="selectTipo('salon')" style="background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s">
-        <div style="font-size:22px;margin-bottom:6px">🎪</div>
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Equipo de Salón</div>
-        <div style="font-size:10px;color:var(--dim);margin-top:3px">Kit asignado a un salón específico</div>
-      </button>
-      <button id="tipo-comp-btn" onclick="selectTipo('compartido')" style="background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s">
-        <div style="font-size:22px;margin-bottom:6px">🔧</div>
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Equipo Compartido</div>
-        <div style="font-size:10px;color:var(--dim);margin-top:3px">Convertidores, apuntadores, hubs…</div>
-      </button>
-    </div>
-
-    <!-- Sección Salón -->
-    <div id="sec-salon" style="display:none">
-      <div class="field">
-        <label>Salón <span class="req">*</span></label>
+    <!-- Salón (opcional — si necesitan kit de salón) -->
+    <div class="card card-s" style="margin-bottom:12px;padding:12px 14px">
+      <div style="font-size:10px;color:var(--goldD);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:10px">🎪 Kit de Salón (opcional)</div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Salón</label>
         <select class="inp" id="sel-salon" onchange="onSalon()">
-          <option value="">— Selecciona el salón —</option>
+          <option value="">— Sin kit de salón —</option>
           <option>Salón Diamante</option><option>Salón Rubí</option>
           <option>Salón Esmeralda</option><option>Salón Zafiro</option>
           <option>Salón Bar Candiles</option>
         </select>
       </div>
-      <div id="zona-f" style="display:none" class="field">
+      <div id="zona-f" style="display:none" class="field" style="margin-bottom:8px">
         <label>Zona <span class="req">*</span></label>
         <div class="chips chips2" id="zona-c"></div>
       </div>
-      <div id="kit-display" style="display:none"></div>
+      <div id="kit-display"></div>
     </div>
 
-    <!-- Sección Equipo Compartido -->
-    <div id="sec-comp" style="display:none">
-      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-weight:600">
-        Selecciona el equipo — toca para elegir
-      </div>
-      <div id="comp-grid" style="display:flex;flex-direction:column;gap:7px"></div>
+    <!-- Equipos adicionales (multi-selección) -->
+    <div class="card card-s" style="margin-bottom:12px;padding:12px 14px">
+      <div style="font-size:10px;color:var(--goldD);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:10px">🔧 Equipos Adicionales (selecciona uno o varios)</div>
+      <div id="comp-grid" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
 
+    <!-- Resumen de selección -->
+    <div id="sel-summary" style="display:none" class="alert alert-green" style="margin-bottom:10px"></div>
     <div id="avail-err" class="alert alert-red" style="display:none"></div>
-    <button class="btn btn-gold btn-full" onclick="step(2)" style="margin-top:10px">Continuar →</button>
+    <button class="btn btn-gold btn-full" onclick="step(2)" style="margin-top:4px">Continuar →</button>
   </div>
 
   <!-- ═══ SOL 2 ═══ -->
@@ -886,7 +873,10 @@ let sessionToken = null;
 let curView      = 'home';
 let dashData     = [];
 let editingId    = null;
-let fTipo='',fSalon='',fZona='',fCaja=null,fKit='',fApu=false,fEvento='',fEmpleado='',fNumEmp='',fDepto='',fGuardia='';
+// Multi-select: fCajas = array of {caja, tipo, kit, salon, zona}
+let fCajas=[], fSalon='',fZona='',fEvento='',fEmpleado='',fNumEmp='',fDepto='',fGuardia='';
+// Legacy helpers kept for backward compat
+let fTipo='',fCaja=null,fKit='',fApu=false;
 let rFound = null;
 let _autoRefresh;
 
@@ -1026,76 +1016,20 @@ function renderHome() {
 }
 
 // ── SOLICITUD ─────────────────────────────────────────────────────────────
-function resetForm(){ fTipo=''; fSalon=fZona=fKit=fEvento=fEmpleado=fNumEmp=fDepto=fGuardia=''; fCaja=null; fApu=false; }
+function resetForm(){ fSalon=fZona=fEvento=fEmpleado=fNumEmp=fDepto=fGuardia=''; fCajas=[]; fTipo=''; fCaja=null; fKit=''; fApu=false; }
 
-// ── Tipo selector ─────────────────────────────────────────────────────────
-function selectTipo(tipo){
-  fTipo=tipo; fSalon=''; fZona=''; fCaja=null; fKit=''; fApu=false;
-  document.getElementById('avail-err').style.display='none';
-
-  const btnS=document.getElementById('tipo-salon-btn');
-  const btnC=document.getElementById('tipo-comp-btn');
-  const secS=document.getElementById('sec-salon');
-  const secC=document.getElementById('sec-comp');
-
-  if(tipo==='salon'){
-    btnS.style.background='rgba(201,168,76,.12)'; btnS.style.borderColor='var(--gold)';
-    btnC.style.background='var(--surf)';          btnC.style.borderColor='var(--border)';
-    secS.style.display='block'; secC.style.display='none';
-    document.getElementById('sel-salon').value='';
-    document.getElementById('zona-f').style.display='none';
-    document.getElementById('kit-display').style.display='none';
-  } else {
-    btnC.style.background='rgba(201,168,76,.12)'; btnC.style.borderColor='var(--gold)';
-    btnS.style.background='var(--surf)';          btnS.style.borderColor='var(--border)';
-    secS.style.display='none'; secC.style.display='block';
-    renderCompGrid();
-  }
-}
-
-function renderCompGrid(){
-  // Use inventory sheet state if available, otherwise fall back to actives()
-  const busyCajas=new Set(
-    inventory.length
-      ? inventory.filter(it=>it.estado==='PRESTADO').map(it=>it.caja)
-      : loans.filter(l=>l.estado==='activo'&&l.caja).map(l=>l.caja)
-  );
-  document.getElementById('comp-grid').innerHTML=EQUIPOS_COMPARTIDOS.map(eq=>{
-    const invRow = inventory.find(it=>it.caja===eq.caja);
-    const busy = busyCajas.has(eq.caja);
-    const sel=fCaja===eq.caja;
-    const loan=busy?loans.find(l=>l.estado==='activo'&&l.caja===eq.caja):null;
-    return `<button onclick="${busy?'':'selComp('+eq.caja+')'}" style="
-      background:${sel?'rgba(201,168,76,.14)':busy?'var(--redbg)':'var(--surf)'};
-      border:1px solid ${sel?'var(--gold)':busy?'var(--red)':'var(--border)'};
-      border-left:4px solid ${sel?'var(--gold)':busy?'var(--red)':'var(--border)'};
-      border-radius:7px;padding:11px 13px;text-align:left;cursor:${busy?'default':'pointer'};
-      transition:all .18s;width:100%">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:11px;font-weight:700;color:var(--gold)">Caja ${eq.caja}</span>
-        ${busy?'<span style="font-size:10px;font-weight:700;color:var(--red)">⚠ PRESTADA</span>':sel?'<span style="font-size:10px;font-weight:700;color:var(--gold)">✓ SELECCIONADA</span>':''}
-      </div>
-      <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:3px">${esc(eq.nombre)}</div>
-      <div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(eq.contenido)}</div>
-      ${busy&&loan?`<div style="font-size:10px;color:var(--red);margin-top:3px">→ ${esc(loan.empleado)} · ${esc(loan.evento||'Sin evento')} · ${esc(folioActivo)}</div>`:busy?`<div style="font-size:10px;color:var(--red);margin-top:3px">Folio: ${esc(folioActivo)}</div>`:''}
-    </button>`;
-  }).join('');
-}
-
-function selComp(caja){
-  fCaja=caja;
-  const eq=EQUIPOS_COMPARTIDOS.find(e=>e.caja===caja);
-  if(eq){ fKit=eq.contenido; fSalon=''; fZona=''; }
-  renderCompGrid();
-}
+// ── MULTI-SELECT — Selección de equipos ───────────────────────────────────
+// fCajas = [{caja, tipo, kit, salon, zona, nombre}]
+// El salón genera UNA entrada; los compartidos pueden ser N entradas.
 
 function onSalon(){
-  fSalon=document.getElementById('sel-salon').value; fZona=''; fApu=false; fCaja=null;
-  const s=SALONES[fSalon];
-  document.getElementById('zona-f').style.display=(s&&s.zonas)?'block':'none';
+  fSalon=document.getElementById('sel-salon').value;
+  fZona='';
+  document.getElementById('zona-f').style.display=(SALONES[fSalon]?.zonas)?'block':'none';
   document.getElementById('avail-err').style.display='none';
-  if(s&&s.zonas) renderZonaChips();
+  if(SALONES[fSalon]?.zonas) renderZonaChips();
   updateKitDisplay();
+  updateSelSummary();
 }
 
 function renderZonaChips(){
@@ -1104,31 +1038,98 @@ function renderZonaChips(){
     `<button class="chip${fZona===z?' on':''}" onclick="selZona('${z}')">${z}</button>`
   ).join('');
 }
-function selZona(z){ fZona=z; renderZonaChips(); checkAvail(); }
+
+function selZona(z){ fZona=z; renderZonaChips(); updateKitDisplay(); checkAvail(); updateSelSummary(); }
 
 function updateKitDisplay(){
-  const s=SALONES[fSalon]; const el=document.getElementById('kit-display');
-  if(!s){ el.style.display='none'; return; }
-  fKit=s.kit;
-  // Resolve caja for this salon/zona
-  if(fSalon==='Salón Diamante' && fZona && s.cajas) fCaja=s.cajas[fZona]||null;
-  else fCaja=s.caja||null;
+  const s=SALONES[fSalon];
+  const el=document.getElementById('kit-display');
+  if(!s||!fSalon){ el.innerHTML=''; return; }
+  if(fSalon==='Salón Diamante'&&!fZona){ el.innerHTML=''; return; }
+  const caja=fSalon==='Salón Diamante'?s.cajas?.[fZona]:s.caja;
   const items=KIT_ITEMS[s.kit]||[s.kit];
-  el.style.display='block';
-  el.innerHTML=`<div class="kit-box">
-    <div class="kit-box-title">📦 Kit incluido${fCaja?' — Caja '+fCaja:''}</div>
+  const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
+  el.innerHTML=`<div class="kit-box" style="border-color:${busy?'var(--red)':'var(--goldD)'}">
+    <div class="kit-box-title" style="color:${busy?'var(--red)':'var(--goldD)'}">
+      📦 Kit incluido — Caja ${caja||'?'}
+      ${busy?` <span style="font-size:10px">⚠ PRESTADO a ${esc(busy.empleado)} · ${busy.id}</span>`:''}
+    </div>
     ${items.map((item,i)=>`<div class="kit-item"><span style="font-size:16px;flex-shrink:0">${s.kitIconos[i]||'📦'}</span><span>${esc(item)}</span></div>`).join('')}
   </div>`;
 }
 
 function checkAvail(){
-  document.getElementById('avail-err').style.display='none';
+  const el=document.getElementById('avail-err');
+  el.style.display='none';
+  if(!fSalon) return;
   const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
   if(busy){
-    const zona=busy.zona?' Zona '+busy.zona:'';
-    document.getElementById('avail-err').textContent=`⚠ ${fSalon}${zona} ya tiene equipo prestado — Evento: "${busy.evento||'Sin nombre'}" · ${busy.empleado} · Folio: ${busy.id}`;
-    document.getElementById('avail-err').style.display='block';
+    el.textContent=`⚠ ${fSalon}${fZona?' Zona '+fZona:''} ya tiene equipo prestado — Evento: "${busy.evento||'Sin nombre'}" · ${busy.empleado} · Folio: ${busy.id}`;
+    el.style.display='block';
   }
+}
+
+// Compartidos: toggle multi-select
+function toggleComp(caja){
+  const eq=EQUIPOS_COMPARTIDOS.find(e=>e.caja===caja);
+  if(!eq) return;
+  const idx=fCajas.findIndex(c=>c.caja===caja&&c.tipo==='compartido');
+  if(idx>=0) fCajas.splice(idx,1);          // deseleccionar
+  else fCajas.push({caja, tipo:'compartido', kit:eq.contenido, salon:null, zona:null, nombre:eq.nombre});
+  renderCompGrid();
+  updateSelSummary();
+}
+
+function renderCompGrid(){
+  const busyCajas=new Set(
+    inventory.length
+      ? inventory.filter(it=>it.estado==='PRESTADO').map(it=>it.caja)
+      : loans.filter(l=>l.estado==='activo'&&l.caja).map(l=>l.caja)
+  );
+  const selCajas=new Set(fCajas.filter(c=>c.tipo==='compartido').map(c=>c.caja));
+  document.getElementById('comp-grid').innerHTML=EQUIPOS_COMPARTIDOS.map(eq=>{
+    const busy=busyCajas.has(eq.caja);
+    const sel=selCajas.has(eq.caja);
+    const loan=busy?loans.find(l=>l.estado==='activo'&&l.caja===eq.caja):null;
+    return `<button onclick="${busy?'void(0)':'toggleComp('+eq.caja+')'}" style="
+      background:${sel?'rgba(39,168,90,.12)':busy?'var(--redbg)':'var(--surf)'};
+      border:1px solid ${sel?'var(--green)':busy?'var(--red)':'var(--border)'};
+      border-left:4px solid ${sel?'var(--green)':busy?'var(--red)':'var(--border)'};
+      border-radius:7px;padding:10px 12px;text-align:left;cursor:${busy?'not-allowed':'pointer'};
+      transition:all .18s;width:100%;opacity:${busy?'.65':'1'}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="width:20px;height:20px;border-radius:4px;border:2px solid ${sel?'var(--green)':busy?'var(--red)':'var(--border)'};
+            background:${sel?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;
+            font-size:12px;color:white;flex-shrink:0">${sel?'✓':''}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--gold)">Caja ${eq.caja}</span>
+        </span>
+        ${busy?'<span style="font-size:10px;font-weight:700;color:var(--red)">⚠ PRESTADA</span>':sel?'<span style="font-size:10px;font-weight:700;color:var(--green)">SELECCIONADA</span>':''}
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:3px">${esc(eq.nombre)}</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(eq.contenido)}</div>
+      ${busy&&loan?`<div style="font-size:10px;color:var(--red);margin-top:3px">→ ${esc(loan.empleado)} · ${esc(loan.evento||'Sin evento')} · ${loan.id}</div>`:''}
+    </button>`;
+  }).join('');
+}
+
+// Resumen de selección actual
+function updateSelSummary(){
+  const sel=document.getElementById('sel-summary');
+  // Build salon item from current fSalon/fZona state
+  const salonItems=[];
+  if(fSalon){
+    const s=SALONES[fSalon];
+    const caja=fSalon==='Salón Diamante'?s?.cajas?.[fZona]:s?.caja;
+    if(fSalon!=='Salón Diamante'||fZona){
+      salonItems.push(`📦 Caja ${caja||'?'} — ${fSalon}${fZona?' Zona '+fZona:''}`);
+    }
+  }
+  const compItems=fCajas.filter(c=>c.tipo==='compartido').map(c=>`🔧 Caja ${c.caja} — ${c.nombre}`);
+  const all=[...salonItems,...compItems];
+  if(!all.length){ sel.style.display='none'; return; }
+  sel.style.display='block';
+  sel.innerHTML=`<strong>Seleccionado (${all.length} item${all.length>1?'s':''}):</strong><br>`+all.map(x=>`• ${esc(x)}`).join('<br>');
 }
 
 function renderDeptoChips(){
@@ -1137,6 +1138,10 @@ function renderDeptoChips(){
   ).join('');
 }
 function selDepto(d){ fDepto=d; renderDeptoChips(); }
+
+// Legacy stubs (no longer used but kept for safety)
+function selectTipo(){}
+function selComp(caja){ toggleComp(caja); }
 
 function updateStepUI(curr){
   [1,2,3].forEach(i=>{
@@ -1148,24 +1153,27 @@ function updateStepUI(curr){
 
 function step(to){
   if(to===2){
-    if(!fTipo){ toast('Selecciona el tipo de equipo.','err'); return; }
-    if(fTipo==='salon'){
-      if(!fSalon){ toast('Selecciona el salón.','err'); return; }
-      if(fSalon==='Salón Diamante'&&!fZona){ toast('Selecciona la zona del salón.','err'); return; }
+    // Build the full selection list from salon + compartidos
+    const allItems = _buildSelItems();
+    if(!allItems.length){
+      toast('Selecciona al menos un equipo.','err'); return;
+    }
+    if(fSalon==='Salón Diamante'&&!fZona){
+      toast('Selecciona la zona del Salón Diamante.','err'); return;
+    }
+    // Check busy salon
+    if(fSalon){
       const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
-      if(busy){ toast('⚠ Este equipo ya está prestado. Debe devolverse primero.','err'); return; }
-    } else {
-      if(!fCaja){ toast('Selecciona el equipo a prestar.','err'); return; }
+      if(busy){ toast(`⚠ ${fSalon}${fZona?' Zona '+fZona:''} ya está prestado. Devuélvelo primero.`,'err'); return; }
     }
     renderDeptoChips();
     const zona=fSalon==='Salón Diamante'?` — Zona ${fZona}`:'';
-    const cajaLabel=fCaja?`<div style="font-size:12px;color:var(--gold);font-weight:700;margin-top:2px">📦 Caja ${fCaja}</div>`:'';
-    const salLabel=fTipo==='salon'?`<div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(fSalon)}${esc(zona)}</div>`:'';
     document.getElementById('s2-sum').innerHTML=`
-      <div style="font-size:10px;color:var(--dim)">Equipo a prestar:</div>
-      ${cajaLabel}
-      <div style="font-weight:600;color:var(--text);font-size:12px;margin-top:2px">${esc(fKit)}</div>
-      ${salLabel}
+      <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Equipos a prestar (${allItems.length}):</div>
+      ${allItems.map(it=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--gold);font-weight:700;min-width:56px">Caja ${it.caja}</span>
+        <span style="font-size:11px;color:var(--text)">${esc(it.nombre||it.salon||'')}${it.zona?' Zona '+it.zona:''}</span>
+      </div>`).join('')}
     `;
     document.getElementById('i-evento').value=fEvento;
     document.getElementById('i-empleado').value=fEmpleado;
@@ -1179,49 +1187,87 @@ function step(to){
     if(!fEmpleado){ toast('Ingresa el nombre del empleado.','err'); return; }
     if(!fNumEmp){ toast('Ingresa el número de empleado.','err'); return; }
     if(!fDepto){ toast('Selecciona el departamento.','err'); return; }
+    const allItems=_buildSelItems();
     const zona=fSalon==='Salón Diamante'?` — Zona ${fZona}`:'';
     const items=[
-      fCaja?['No. Caja','Caja '+fCaja]:null,
-      ['Tipo',fTipo==='salon'?'Equipo de Salón':'Equipo Compartido'],
-      fSalon?['Salón',fSalon+zona]:null,
-      ['Kit de equipos',fKit],
+      ['Equipos seleccionados', allItems.map(it=>`Caja ${it.caja} — ${it.nombre||it.salon||''}`).join(' | ')],
       ['Evento',fEvento],['Empleado',fEmpleado],['No. Empleado',fNumEmp],['Departamento',fDepto]
-    ].filter(Boolean);
-    document.getElementById('s3-sum').innerHTML=`<div style="font-size:10px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Resumen del préstamo</div>${items.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('')}`;
+    ];
+    document.getElementById('s3-sum').innerHTML=`<div style="font-size:10px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Resumen — se generará 1 folio por equipo</div>${items.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('')}`;
     document.getElementById('i-guardia').value=fGuardia;
   }
   if(to===1){
-    if(fTipo) selectTipo(fTipo);
-    if(fTipo==='salon'&&fSalon){ document.getElementById('sel-salon').value=fSalon; onSalon(); if(fZona) setTimeout(renderZonaChips,50); }
+    renderCompGrid();
+    updateSelSummary();
+    if(fSalon){ document.getElementById('sel-salon').value=fSalon; onSalon(); if(fZona) setTimeout(renderZonaChips,50); }
   }
   updateStepUI(to); showView('sol'+to);
+}
+
+// Build the complete list of items to lend (salon kit + compartidos)
+function _buildSelItems(){
+  const items=[];
+  if(fSalon && (fSalon!=='Salón Diamante'||fZona)){
+    const s=SALONES[fSalon];
+    const caja=fSalon==='Salón Diamante'?s?.cajas?.[fZona]:s?.caja;
+    items.push({caja, tipo:'salon', kit:s.kit, salon:fSalon, zona:fZona||null, nombre:fSalon+(fZona?' — Zona '+fZona:'')});
+  }
+  fCajas.filter(c=>c.tipo==='compartido').forEach(c=>items.push(c));
+  return items;
 }
 
 async function submitSolicitud(){
   fGuardia=document.getElementById('i-guardia').value.trim();
   if(!fGuardia){ toast('Ingresa el nombre del guardia.','err'); return; }
-  const busy=loans.find(l=>l.estado==='activo'&&l.salon===fSalon&&(fSalon!=='Salón Diamante'||l.zona===fZona));
-  if(busy){ toast('⚠ Este equipo ya está en préstamo activo.','err'); return; }
 
-  loading('Registrando préstamo…');
+  const allItems=_buildSelItems();
+  if(!allItems.length){ toast('No hay equipos seleccionados.','err'); return; }
+
+  loading(`Registrando ${allItems.length} préstamo${allItems.length>1?'s':''}…`);
+  const results=[], errors=[];
+  const now=Date.now();
+
   try {
-    const loan={caja:fCaja,tipo:fTipo,salon:fSalon||null,zona:fZona||null,kit:fKit,apuntador:fApu,evento:fEvento,empleado:fEmpleado,numeroEmpleado:fNumEmp,departamento:fDepto,personalSeguridad:fGuardia,fechaSalida:Date.now()};
-    const r=await api('addLoan',{loan});
-    // ── Actualización inmediata ───────────────────────────────────────
-    loans.unshift(r.loan); lsave();
-    renderHome();
+    for(const it of allItems){
+      try {
+        const loan={
+          caja:it.caja, tipo:it.tipo,
+          salon:it.salon||null, zona:it.zona||null,
+          kit:it.kit, apuntador:false,
+          evento:fEvento, empleado:fEmpleado,
+          numeroEmpleado:fNumEmp, departamento:fDepto,
+          personalSeguridad:fGuardia, fechaSalida:now
+        };
+        const r=await api('addLoan',{loan});
+        loans.unshift(r.loan);
+        results.push(r.loan);
+      } catch(e){ errors.push(`Caja ${it.caja}: ${e.message}`); }
+    }
+    lsave(); renderHome();
 
-    const cf=r.loan, zona=cf.zona?` — Zona ${cf.zona}`:'';
-    document.getElementById('cf-folio').innerHTML=`<div class="folio-lbl">Número de Folio</div><div class="folio-num">${esc(cf.id)}</div><div style="font-size:10px;color:var(--dim);margin-top:3px">Guarda este folio para la devolución</div>`;
-    const rows=[
-      cf.caja?['No. Caja','Caja '+cf.caja]:null,
-      ['Tipo',cf.tipo==='salon'?'Equipo de Salón':'Equipo Compartido'],
-      cf.salon?['Salón',cf.salon+zona]:null,
-      ['Kit de equipos',cf.kit],['Evento',cf.evento],
-      ['Empleado',cf.empleado],['No. Empleado',cf.numeroEmpleado],
-      ['Departamento',cf.departamento],['Guardia (salida)',cf.personalSeguridad],['Fecha y hora',fmt(cf.fechaSalida)]
-    ].filter(Boolean);
-    document.getElementById('cf-detail').innerHTML=rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2">${esc(v)}</span></div>`).join('');
+    // Confirmation — show all folios
+    const foliosHtml = results.map(cf=>
+      `<div style="background:var(--surf);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:10px;color:var(--dim)">Caja ${cf.caja} — ${esc(cf.salon||cf.kit)}</div>
+        <div class="folio-num" style="font-size:18px;margin:4px 0">${esc(cf.id)}</div>
+      </div>`
+    ).join('');
+
+    const errHtml = errors.length
+      ? `<div class="alert alert-red" style="margin-top:8px">${errors.map(esc).join('<br>')}</div>`:'';
+
+    document.getElementById('cf-folio').innerHTML=
+      `<div class="folio-lbl">Folios generados (${results.length})</div>`+foliosHtml+errHtml+
+      `<div style="font-size:10px;color:var(--dim);margin-top:6px">Anota cada folio en la bitácora</div>`;
+
+    document.getElementById('cf-detail').innerHTML=`
+      <div class="srow"><span class="sk">Evento</span><span class="sv2">${esc(fEvento)}</span></div>
+      <div class="srow"><span class="sk">Empleado</span><span class="sv2">${esc(fEmpleado)}</span></div>
+      <div class="srow"><span class="sk">No. Empleado</span><span class="sv2">${esc(fNumEmp)}</span></div>
+      <div class="srow"><span class="sk">Departamento</span><span class="sv2">${esc(fDepto)}</span></div>
+      <div class="srow"><span class="sk">Guardia (salida)</span><span class="sv2">${esc(fGuardia)}</span></div>
+      <div class="srow"><span class="sk">Fecha y hora</span><span class="sv2">${fmt(now)}</span></div>
+    `;
     showView('confirmacion');
   } catch(e){ toast('Error: '+e.message,'err'); }
   doneLoading();
@@ -1840,8 +1886,8 @@ async function init(){
 
   // Sync inicial en background
   await syncNow(true);
-  loadInventory();  // cargar inventario en background
-  loadDeptos();     // cargar departamentos en background
+  loadInventory().then(()=>renderCompGrid()); // cargar inventario y renderizar grid
+  loadDeptos();
 
   // Auto-sync cada 60 segundos en background (sin loader, silencioso)
   _autoRefresh = setInterval(()=>syncNow(true), 60000);
