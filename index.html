@@ -177,7 +177,7 @@ select.inp{appearance:none;cursor:pointer}
   *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
   body{ margin:0; padding:0; }
 
-  #app,#loader,#toast,#modal,#print-area{ display:none !important; }
+  #app,#loader,#toast,#modal,#print-area,#bitacora-print-area,#acta-print-area{ display:none !important; }
 
   /* ── QR: páginas completas con logo ── */
   #qr-print-area{ display:block !important; margin:0; padding:0; }
@@ -296,11 +296,48 @@ select.inp{appearance:none;cursor:pointer}
   .pr-badge.activo{ background:#fff3cd; color:#856404; }
   .pr-badge.devuelto{ background:#d1e7dd; color:#0a3622; }
   .pr-footer{ margin-top:12px; font-size:8px; color:#888; text-align:right; border-top:1px solid #ddd; padding-top:6px; }
+
+  /* ── Bitácora de turno ── */
+  #bitacora-print-area{ display:block !important; }
+  #acta-print-area{ display:block !important; }
+
+  .doc-page{ width:215.9mm; min-height:279.4mm; box-sizing:border-box; padding:12mm 14mm; page-break-after:always; font-family:Arial,sans-serif; font-size:9pt; color:#000; background:#fff; }
+  .doc-page:last-child{ page-break-after:avoid; }
+  .doc-header{ display:flex; align-items:center; gap:6mm; border-bottom:2pt solid #c9a84c; padding-bottom:5mm; margin-bottom:5mm; }
+  .doc-logo{ width:16mm; height:16mm; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .doc-hotel{ font-size:13pt; font-weight:bold; color:#07091a; display:block; }
+  .doc-dept{ font-size:8pt; color:#7d6225; text-transform:uppercase; letter-spacing:.1em; display:block; margin-top:1mm; }
+  .doc-title{ font-size:11pt; font-weight:bold; color:#07091a; text-transform:uppercase; letter-spacing:.06em; display:block; margin-top:1mm; }
+  .doc-meta{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:3mm; margin-bottom:5mm; }
+  .doc-meta-item{ border:0.5pt solid #ccc; border-radius:2mm; padding:2mm 3mm; }
+  .doc-meta-label{ font-size:7pt; color:#888; text-transform:uppercase; display:block; }
+  .doc-meta-value{ font-size:9pt; font-weight:bold; color:#07091a; display:block; min-height:5mm; border-bottom:0.5pt solid #aaa; margin-top:1mm; }
+  .doc-table{ width:100%; border-collapse:collapse; font-size:7.5pt; margin-bottom:4mm; }
+  .doc-table th{ background:#c9a84c !important; color:#07091a; padding:2mm 2.5mm; text-align:left; font-weight:bold; font-size:7pt; }
+  .doc-table td{ padding:2mm 2.5mm; border-bottom:0.5pt solid #ddd; vertical-align:top; min-height:6mm; }
+  .doc-table tr:nth-child(even) td{ background:#f9f9f9; }
+  .doc-table .write-line{ border-bottom:0.5pt solid #999; display:block; min-height:5mm; }
+  .doc-section-title{ font-size:9pt; font-weight:bold; color:#07091a; text-transform:uppercase; letter-spacing:.05em; margin:4mm 0 2mm; border-left:3pt solid #c9a84c; padding-left:3mm; }
+  .doc-inv-table{ width:100%; border-collapse:collapse; font-size:8pt; margin-bottom:4mm; }
+  .doc-inv-table th{ background:#07091a !important; color:#c9a84c; padding:2mm 2.5mm; text-align:center; font-size:7.5pt; }
+  .doc-inv-table td{ padding:2mm 2.5mm; border:0.5pt solid #ddd; text-align:center; }
+  .doc-inv-table td.label{ text-align:left; font-weight:bold; }
+  .check-box{ display:inline-block; width:4mm; height:4mm; border:1pt solid #333; vertical-align:middle; margin-right:1mm; }
+  .sign-area{ display:grid; grid-template-columns:1fr 1fr; gap:8mm; margin-top:6mm; }
+  .sign-box{ border-top:1pt solid #333; padding-top:2mm; text-align:center; }
+  .sign-label{ font-size:8pt; font-weight:bold; color:#07091a; }
+  .sign-sub{ font-size:7pt; color:#888; }
+  .doc-footer{ margin-top:4mm; font-size:7pt; color:#aaa; text-align:center; border-top:0.5pt solid #ddd; padding-top:3mm; }
+  .status-activo{ background:#fff3cd; color:#856404; padding:1mm 2mm; border-radius:1mm; font-size:7pt; font-weight:bold; }
+  .status-devuelto{ background:#d1e7dd; color:#0a3622; padding:1mm 2mm; border-radius:1mm; font-size:7pt; font-weight:bold; }
+  .status-pendiente{ background:#f8d7da; color:#842029; padding:1mm 2mm; border-radius:1mm; font-size:7pt; font-weight:bold; }
 }
 
 /* Hidden print areas (visible only on print) */
 #print-area{display:none}
 #qr-print-area{display:none}
+#bitacora-print-area{display:none}
+#acta-print-area{display:none}
 
 @media(max-width:400px){.lc-data,.filter-grid{grid-template-columns:1fr}}
 </style>
@@ -489,9 +526,26 @@ select.inp{appearance:none;cursor:pointer}
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
         <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 Exportar Excel</button>
-        <button class="btn btn-outline btn-sm" onclick="printReport()">🖨 Imprimir Reporte</button>
+        <button class="btn btn-outline btn-sm" onclick="printReport()">🖨 Reporte</button>
+        <button class="btn btn-outline btn-sm" onclick="printBitacora()" style="color:var(--amber);border-color:rgba(230,126,34,.4)">📋 Bitácora de Turno</button>
+        <button class="btn btn-outline btn-sm" onclick="printActa()" style="color:var(--green);border-color:rgba(39,168,90,.4)">📝 Acta de Turno</button>
+        <button class="btn btn-outline btn-sm" onclick="showInventory()" style="color:var(--gold);border-color:rgba(201,168,76,.4)">📦 Inventario</button>
         <button class="btn btn-outline btn-sm" onclick="reloadDash()">↺ Actualizar</button>
         <button class="btn btn-outline btn-sm" style="color:var(--blue);border-color:rgba(90,138,224,.4)" onclick="showSetup2fa()">🔑 Config 2FA</button>
+      </div>
+
+      <!-- Inventario panel -->
+      <div id="panel-inventory" class="card" style="display:none;margin-top:14px">
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;font-weight:700">📦 Inventario — Stock por Salón/Zona</div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.5">
+          Define cuántos equipos hay físicamente en cada salón. Esto se usa para generar el Acta de Turno y detectar discrepancias.
+        </div>
+        <div id="inv-table-wrap"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-gold btn-sm" onclick="saveInventoryUI()">💾 Guardar Inventario</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('panel-inventory').style.display='none'">Cerrar</button>
+        </div>
+        <div id="inv-save-msg" style="display:none;margin-top:8px" class="alert alert-green">✅ Inventario guardado correctamente.</div>
       </div>
 
       <div id="panel-setup2fa" class="card" style="display:none;margin-top:14px;text-align:center">
@@ -589,6 +643,135 @@ select.inp{appearance:none;cursor:pointer}
     </div>
   </div>
 
+</div>
+
+<!-- ══ BITÁCORA DE TURNO (imprimible) ══ -->
+<div id="bitacora-print-area">
+  <div class="doc-page">
+    <div class="doc-header">
+      <img src="data:image/png;base64,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" class="doc-logo" alt="Sheraton">
+      <div>
+        <span class="doc-hotel">Sheraton Chihuahua Soberano</span>
+        <span class="doc-dept">Departamento de Seguridad</span>
+        <span class="doc-title">Bitácora de Préstamo de Equipos</span>
+      </div>
+    </div>
+    <div class="doc-meta">
+      <div class="doc-meta-item"><span class="doc-meta-label">Fecha</span><span class="doc-meta-value" id="bit-fecha"></span></div>
+      <div class="doc-meta-item"><span class="doc-meta-label">Turno</span><span class="doc-meta-value" id="bit-turno"></span></div>
+      <div class="doc-meta-item"><span class="doc-meta-label">Guardia responsable</span><span class="doc-meta-value"></span></div>
+    </div>
+    <table class="doc-table">
+      <thead><tr>
+        <th style="width:8%">Hora</th>
+        <th style="width:14%">Salón / Zona</th>
+        <th style="width:18%">Evento</th>
+        <th style="width:12%">Equipo</th>
+        <th style="width:14%">Empleado</th>
+        <th style="width:7%">No. Emp</th>
+        <th style="width:9%">Depto.</th>
+        <th style="width:8%">Folio</th>
+        <th style="width:10%">Firma empleado</th>
+      </tr></thead>
+      <tbody id="bit-body"></tbody>
+    </table>
+    <div class="doc-section-title">Devoluciones registradas en este turno</div>
+    <table class="doc-table">
+      <thead><tr>
+        <th style="width:8%">Hora reg.</th>
+        <th style="width:14%">Salón / Zona</th>
+        <th style="width:18%">Evento</th>
+        <th style="width:12%">Equipo</th>
+        <th style="width:14%">Empleado</th>
+        <th style="width:8%">Folio</th>
+        <th style="width:14%">Guardia recibe</th>
+        <th style="width:12%">Observaciones</th>
+      </tr></thead>
+      <tbody id="bit-ret-body"></tbody>
+    </table>
+    <div style="margin-top:6mm">
+      <div class="doc-section-title">Observaciones del turno</div>
+      <div style="border:0.5pt solid #ccc;border-radius:2mm;min-height:18mm;padding:2mm;"></div>
+    </div>
+    <div class="sign-area">
+      <div class="sign-box"><div class="sign-label">Guardia que entrega el turno</div><div class="sign-sub">Nombre y firma</div></div>
+      <div class="sign-box"><div class="sign-label">Guardia que recibe el turno</div><div class="sign-sub">Nombre y firma</div></div>
+    </div>
+    <div class="doc-footer">Sheraton Chihuahua Soberano · Depto. de Seguridad · Desarrollado por Depto. de Sistemas · Este documento debe conservarse por 30 días</div>
+  </div>
+</div>
+
+<!-- ══ ACTA DE CAMBIO DE TURNO (imprimible) ══ -->
+<div id="acta-print-area">
+  <div class="doc-page">
+    <div class="doc-header">
+      <img src="data:image/png;base64,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" class="doc-logo" alt="Sheraton">
+      <div>
+        <span class="doc-hotel">Sheraton Chihuahua Soberano</span>
+        <span class="doc-dept">Departamento de Seguridad</span>
+        <span class="doc-title">Acta de Entrega-Recepción de Turno — Equipos AV</span>
+      </div>
+    </div>
+    <div class="doc-meta">
+      <div class="doc-meta-item"><span class="doc-meta-label">Fecha</span><span class="doc-meta-value" id="acta-fecha"></span></div>
+      <div class="doc-meta-item"><span class="doc-meta-label">Turno que entrega</span><span class="doc-meta-value" id="acta-turno-sal"></span></div>
+      <div class="doc-meta-item"><span class="doc-meta-label">Turno que recibe</span><span class="doc-meta-value" id="acta-turno-ent"></span></div>
+    </div>
+
+    <div class="doc-section-title">1. Conteo físico de equipos al cambio de turno</div>
+    <table class="doc-inv-table">
+      <thead><tr>
+        <th style="width:20%;text-align:left">Salón / Zona</th>
+        <th>Kit de equipos</th>
+        <th>Apuntador</th>
+        <th>¿Físicamente presente?</th>
+        <th>Folio préstamo activo</th>
+        <th>Observaciones</th>
+      </tr></thead>
+      <tbody id="acta-inv-body"></tbody>
+    </table>
+
+    <div class="doc-section-title">2. Préstamos activos al cierre del turno (pendientes de devolución)</div>
+    <table class="doc-table">
+      <thead><tr>
+        <th>Folio</th><th>Salón</th><th>Evento</th><th>Empleado</th><th>Depto.</th><th>Guardia que entregó</th><th>Hora de salida</th><th>Estado</th>
+      </tr></thead>
+      <tbody id="acta-activos-body"></tbody>
+    </table>
+
+    <div class="doc-section-title">3. Resumen del turno</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin-bottom:4mm">
+      <div class="doc-meta-item"><span class="doc-meta-label">Total préstamos</span><span class="doc-meta-value" id="acta-total"></span></div>
+      <div class="doc-meta-item"><span class="doc-meta-label">Devueltos</span><span class="doc-meta-value" id="acta-devueltos"></span></div>
+      <div class="doc-meta-item"><span class="doc-meta-label">Pendientes</span><span class="doc-meta-value" id="acta-pendientes"></span></div>
+      <div class="doc-meta-item"><span class="doc-meta-label">Discrepancias</span><span class="doc-meta-value" id="acta-disc" style="color:#c0392b"></span></div>
+    </div>
+
+    <div class="doc-section-title">4. Declaración y firmas</div>
+    <div style="font-size:8pt;color:#444;line-height:1.6;margin-bottom:4mm;border:0.5pt solid #ddd;border-radius:2mm;padding:2.5mm">
+      Los suscritos declaramos que el conteo físico de equipos descrito en esta acta corresponde al estado real del inventario al momento del cambio de turno.
+      Cualquier discrepancia ha sido registrada en el campo de observaciones. El guardia que recibe el turno asume plena responsabilidad
+      sobre los equipos que se encuentran prestados y sobre los que están en custodia de seguridad a partir de este momento.
+    </div>
+    <div class="sign-area">
+      <div class="sign-box">
+        <div class="sign-label">Guardia que entrega el turno</div>
+        <div style="margin-top:10mm;border-top:1pt solid #333;padding-top:1mm">
+          <div class="sign-sub">Nombre completo y número de empleado</div>
+        </div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-label">Guardia que recibe el turno</div>
+        <div style="margin-top:10mm;border-top:1pt solid #333;padding-top:1mm">
+          <div class="sign-sub">Nombre completo y número de empleado</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:4mm">
+      <div class="doc-meta-item"><span class="doc-meta-label">Supervisado por (Gerente de Seguridad — cuando aplique)</span><span class="doc-meta-value"></span></div>
+    </div>
+    <div class="doc-footer">Original: Expediente del turno · Copia 1: Gerente de Seguridad · Copia 2: Depto. de Sistemas · Desarrollado por Depto. de Sistemas</div>
+  </div>
 </div>
 
 <div id="loader"><div class="spin" style="font-size:28px">⏳</div><div id="ld-txt">Conectando…</div></div>
@@ -1125,12 +1308,14 @@ function printReport(){
   const f=getFilters();
   const parts=[];
   if(f.desde||f.hasta) parts.push('Período: '+(f.desde?fmt(f.desde):'inicio')+' → '+(f.hasta?fmt(f.hasta):'hoy'));
-  if(f.estado)        parts.push('Estado: '+f.estado);
-  if(f.salon)         parts.push('Salón: '+f.salon);
-  if(f.departamento)  parts.push('Depto: '+f.departamento);
-  if(f.evento)        parts.push('Evento: '+f.evento);
-  if(f.empleado)      parts.push('Empleado: '+f.empleado);
-  document.getElementById('pr-filters-summary').textContent = parts.length?'Filtros aplicados: '+parts.join(' | '):'Sin filtros — mostrando todos los registros.';
+  if(f.estado)         parts.push('Estado: '+f.estado);
+  if(f.salon)          parts.push('Salón: '+f.salon);
+  if(f.departamento)   parts.push('Depto: '+f.departamento);
+  if(f.evento)         parts.push('Evento: '+f.evento);
+  if(f.empleado)       parts.push('Empleado: '+f.empleado);
+  document.getElementById('pr-filters-summary').textContent = parts.length
+    ? 'Filtros aplicados: '+parts.join(' | ')
+    : 'Sin filtros — mostrando todos los registros.';
 
   document.getElementById('pr-body').innerHTML = dashData.map(l=>{
     const zona=l.zona?' Z.'+l.zona:'';
@@ -1152,19 +1337,9 @@ function printReport(){
   }).join('');
 
   document.getElementById('pr-footer').textContent =
-    `Total: ${dashData.length} registros · Activos: ${dashData.filter(l=>l.estado==='activo').length} · Devueltos: ${dashData.filter(l=>l.estado==='devuelto').length} · Sistema de Control de Equipos v3.1`;
+    `Total: ${dashData.length} reg. · Activos: ${dashData.filter(l=>l.estado==='activo').length} · Devueltos: ${dashData.filter(l=>l.estado==='devuelto').length} · Sheraton CHH — Sistema de Control de Equipos v3.1`;
 
-  // Mostrar solo el reporte, ocultar QR
-  const pa = document.getElementById('print-area');
-  const qa = document.getElementById('qr-print-area');
-  qa.style.display = 'none';
-  pa.classList.add('visible');
-  pa.style.display = 'block';
-  setTimeout(()=>{
-    window.print();
-    pa.style.display = 'none';
-    pa.classList.remove('visible');
-  }, 300);
+  _doPrint('print-area');
 }
 
 // ── Print QR ──────────────────────────────────────────────────────────────
@@ -1173,41 +1348,24 @@ function printQR(){
   const solImg = document.getElementById('qr-sol-print');
   const retImg = document.getElementById('qr-ret-print');
 
-  // Limpiar handlers anteriores para evitar disparos múltiples
-  solImg.onload = null; retImg.onload = null;
-  solImg.onerror = null; retImg.onerror = null;
+  // Reset handlers
+  solImg.onload = solImg.onerror = retImg.onload = retImg.onerror = null;
 
-  // Negro puro sobre blanco — máximo contraste para impresión
   const solSrc = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
   const retSrc = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
 
-  document.getElementById('print-area').style.display = 'none';
-  document.getElementById('print-area').classList.remove('visible');
-
-  // Flag de una sola ejecución — evita que onload + complete disparen varias veces
-  let fired = false;
-  let loadCount = 0;
-
-  const tryPrint = () => {
+  // Single-fire flag
+  let fired=false, loadCount=0;
+  const tryPrint = ()=>{
     if(fired) return;
-    loadCount++;
-    if(loadCount < 2) return;
-    fired = true;
-    solImg.onload = null; retImg.onload = null;
-    solImg.onerror = null; retImg.onerror = null;
-    document.getElementById('qr-print-area').style.display = 'block';
-    setTimeout(()=>{
-      window.print();
-      setTimeout(()=>{ document.getElementById('qr-print-area').style.display = 'none'; }, 500);
-    }, 400);
+    if(++loadCount < 2) return;
+    fired=true;
+    solImg.onload = solImg.onerror = retImg.onload = retImg.onerror = null;
+    _doPrint('qr-print-area');
   };
 
-  // Asignar nuevos src — si cambia, onload se disparará una vez por imagen
-  solImg.onload  = tryPrint;
-  solImg.onerror = tryPrint;
-  retImg.onload  = tryPrint;
-  retImg.onerror = tryPrint;
-
+  solImg.onload = solImg.onerror = tryPrint;
+  retImg.onload = retImg.onerror = tryPrint;
   solImg.src = solSrc;
   retImg.src = retSrc;
 }
@@ -1224,6 +1382,213 @@ async function showSetup2fa(){
   } catch(e){ document.getElementById('qr-2fa').innerHTML=`<div class="alert alert-red">Error: ${esc(e.message)}</div>`; }
 }
 
+// ── Inventory ─────────────────────────────────────────────────────────────
+let inventory = [];
+const DEFAULT_INV = [
+  { id:'dia1', salon:'Salón Diamante', zona:'A1', kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
+  { id:'dia2', salon:'Salón Diamante', zona:'B',  kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
+  { id:'dia3', salon:'Salón Diamante', zona:'B1', kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
+  { id:'dia4', salon:'Salón Diamante', zona:'C',  kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
+  { id:'rub1', salon:'Salón Rubí',      zona:null, kit:'Kit proyección (pantalla+proyector)', apuntador:true  },
+  { id:'esm1', salon:'Salón Esmeralda', zona:null, kit:'Kit inalámbrico (proyector+dispositivo)', apuntador:false },
+  { id:'zaf1', salon:'Salón Zafiro',    zona:null, kit:'Kit inalámbrico (proyector+dispositivo)', apuntador:false },
+];
+
+async function loadInventory(){
+  try { const r=await api('getInventory',{}); inventory=r.inventory||DEFAULT_INV; }
+  catch(_){ inventory=DEFAULT_INV; }
+}
+
+function showInventory(){
+  document.getElementById('panel-inventory').style.display='block';
+  document.getElementById('inv-save-msg').style.display='none';
+  renderInvTable();
+}
+
+function renderInvTable(){
+  const rows = inventory.map((it,i)=>`
+    <tr>
+      <td style="font-size:12px;color:var(--text);padding:8px 6px">
+        <strong>${esc(it.salon)}</strong>${it.zona?' — Zona '+esc(it.zona):''}
+      </td>
+      <td style="padding:8px 6px">
+        <input class="inp" value="${esc(it.kit)}" onchange="inventory[${i}].kit=this.value" style="font-size:11px;padding:6px 10px">
+      </td>
+      <td style="text-align:center;padding:8px 6px">
+        <button onclick="inventory[${i}].apuntador=!inventory[${i}].apuntador;renderInvTable()"
+          style="background:${it.apuntador?'var(--green)':'var(--surf)'};border:1px solid ${it.apuntador?'var(--green)':'var(--border)'};color:${it.apuntador?'#fff':'var(--dim)'};border-radius:5px;padding:5px 12px;cursor:pointer;font-size:12px">
+          ${it.apuntador?'✓ Sí':'— No'}
+        </button>
+      </td>
+      <td style="text-align:center;padding:8px 6px">
+        <button onclick="removeInvRow(${i})" style="background:transparent;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:11px">✕</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('inv-table-wrap').innerHTML=`
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Salón / Zona</th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:left;border-bottom:1px solid var(--border)">Kit de equipos</th>
+        <th style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;padding:6px;text-align:center;border-bottom:1px solid var(--border)">Apuntador</th>
+        <th style="font-size:10px;padding:6px;border-bottom:1px solid var(--border)"></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <button onclick="addInvRow()" class="btn btn-outline btn-sm" style="margin-top:8px;width:100%">+ Agregar fila</button>
+  `;
+}
+
+function removeInvRow(i){ inventory.splice(i,1); renderInvTable(); }
+function addInvRow(){
+  inventory.push({id:'new'+Date.now(),salon:'',zona:'',kit:'',apuntador:false});
+  renderInvTable();
+}
+
+async function saveInventoryUI(){
+  loading('Guardando inventario…');
+  try {
+    await api('saveInventory',{inventory});
+    document.getElementById('inv-save-msg').style.display='block';
+    toast('✅ Inventario guardado.');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+  doneLoading();
+}
+
+// ── Bitácora de turno ─────────────────────────────────────────────────────
+function printBitacora(){
+  const now = new Date();
+  const h   = now.getHours();
+  const turno = h>=6&&h<14?'1er Turno (06:00–14:00)':h>=14&&h<22?'2do Turno (14:00–22:00)':'3er Turno (22:00–06:00)';
+
+  document.getElementById('bit-fecha').textContent = now.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('bit-turno').textContent = turno;
+
+  // Préstamos activos del sistema (para pre-llenar)
+  const act = actives();
+  const retHoy = loans.filter(l=>l.estado==='devuelto'&&l.fechaRegreso>=(new Date().setHours(0,0,0,0)));
+
+  // Filas de préstamos activos (pre-llenadas) + filas vacías para manual
+  let bodyHtml = act.map(l=>`
+    <tr>
+      <td>${fmt(l.fechaSalida).split(' ')[1]||'—'}</td>
+      <td>${esc(l.salon)}${l.zona?' Z.'+esc(l.zona):''}</td>
+      <td>${esc(l.evento||'—')}</td>
+      <td style="font-size:7pt">${esc((l.kit||'').split('—')[0])}</td>
+      <td>${esc(l.empleado)}</td>
+      <td>${esc(l.numeroEmpleado)}</td>
+      <td>${esc(l.departamento)}</td>
+      <td style="font-family:monospace;font-size:7pt">${esc(l.id)}</td>
+      <td></td>
+    </tr>
+  `).join('');
+  // Add empty rows for manual entries
+  for(let i=0;i<Math.max(3,8-act.length);i++){
+    bodyHtml+=`<tr>${'<td style="height:7mm"></td>'.repeat(9)}</tr>`;
+  }
+  document.getElementById('bit-body').innerHTML = bodyHtml;
+
+  // Devoluciones de hoy
+  let retHtml = retHoy.slice(-8).map(l=>`
+    <tr>
+      <td>${l.fechaRegreso?fmt(l.fechaRegreso).split(' ')[1]:'—'}</td>
+      <td>${esc(l.salon)}${l.zona?' Z.'+esc(l.zona):''}</td>
+      <td>${esc(l.evento||'—')}</td>
+      <td style="font-size:7pt">${esc((l.kit||'').split('—')[0])}</td>
+      <td>${esc(l.empleado)}</td>
+      <td style="font-family:monospace;font-size:7pt">${esc(l.id)}</td>
+      <td>${esc(l.personalRegreso||'—')}</td>
+      <td></td>
+    </tr>
+  `).join('');
+  for(let i=0;i<Math.max(3,6-retHoy.length);i++){
+    retHtml+=`<tr>${'<td style="height:7mm"></td>'.repeat(8)}</tr>`;
+  }
+  document.getElementById('bit-ret-body').innerHTML = retHtml;
+
+  _doPrint('bitacora-print-area');
+}
+
+// ── Acta de cambio de turno ───────────────────────────────────────────────
+async function printActa(){
+  await loadInventory();
+  const now = new Date();
+  const h = now.getHours();
+  const turnos = ['3er Turno (22:00–06:00)','1er Turno (06:00–14:00)','2do Turno (14:00–22:00)','3er Turno (22:00–06:00)'];
+  const ti = h>=6&&h<14?1:h>=14&&h<22?2:3;
+  const turnoSal = ['1er Turno (06:00–14:00)','2do Turno (14:00–22:00)','3er Turno (22:00–06:00)'][ti-1];
+  const turnoRec = ['2do Turno (14:00–22:00)','3er Turno (22:00–06:00)','1er Turno (06:00–14:00)'][ti-1];
+
+  document.getElementById('acta-fecha').textContent = now.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('acta-turno-sal').textContent = turnoSal;
+  document.getElementById('acta-turno-ent').textContent = turnoRec;
+
+  const act = actives();
+
+  // Inventory table — cross-reference with active loans
+  const invHtml = inventory.map(it=>{
+    const zona = it.zona?' — Zona '+it.zona:'';
+    const loan = act.find(l=>l.salon===it.salon&&(it.zona?l.zona===it.zona:!l.zona));
+    const prestado = !!loan;
+    return `<tr>
+      <td class="label">${esc(it.salon)}${esc(zona)}</td>
+      <td style="text-align:left;font-size:7.5pt">${esc(it.kit)}</td>
+      <td>${it.apuntador?'✓':'—'}</td>
+      <td style="color:${prestado?'#856404':'#0a3622'};font-weight:bold">
+        ${prestado?'<span class="status-activo">PRESTADO</span>':'<span class="status-devuelto">EN SEGURIDAD</span>'}
+      </td>
+      <td style="font-family:monospace;font-size:7pt">${loan?loan.id:''}</td>
+      <td></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('acta-inv-body').innerHTML = invHtml;
+
+  // Active loans
+  const activosHtml = act.length>0
+    ? act.map(l=>`<tr>
+        <td style="font-family:monospace;font-size:7pt">${esc(l.id)}</td>
+        <td>${esc(l.salon)}${l.zona?' Z.'+esc(l.zona):''}</td>
+        <td>${esc(l.evento||'—')}</td>
+        <td>${esc(l.empleado)}</td>
+        <td>${esc(l.departamento)}</td>
+        <td>${esc(l.personalSeguridad)}</td>
+        <td style="font-size:7.5pt">${fmt(l.fechaSalida)}</td>
+        <td><span class="status-activo">PENDIENTE</span></td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;color:#888;padding:4mm">Sin préstamos activos al cierre del turno ✅</td></tr>';
+  document.getElementById('acta-activos-body').innerHTML = activosHtml;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const turnLoans = loans.filter(l=>l.fechaSalida>=today);
+  const devueltos = turnLoans.filter(l=>l.estado==='devuelto').length;
+  const discrepancias = act.filter(l=>!inventory.find(it=>it.salon===l.salon&&(it.zona?it.zona===l.zona:!l.zona))).length;
+
+  document.getElementById('acta-total').textContent     = turnLoans.length;
+  document.getElementById('acta-devueltos').textContent = devueltos;
+  document.getElementById('acta-pendientes').textContent= act.length;
+  document.getElementById('acta-disc').textContent      = discrepancias>0?discrepancias+' ⚠':'0 ✅';
+
+  _doPrint('acta-print-area');
+}
+
+// ── Generic print helper ──────────────────────────────────────────────────
+function _doPrint(areaId){
+  ['print-area','qr-print-area','bitacora-print-area','acta-print-area'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+    document.getElementById(id).classList.remove('visible');
+  });
+  document.getElementById(areaId).style.display='block';
+  if(areaId==='print-area') document.getElementById(areaId).classList.add('visible');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      document.getElementById(areaId).style.display='none';
+      document.getElementById(areaId).classList.remove('visible');
+    },500);
+  },350);
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init(){
   lload(); renderHome();
@@ -1234,6 +1599,7 @@ async function init(){
 
   // Sync inicial en background
   await syncNow(true);
+  loadInventory(); // cargar inventario en background
 
   // Auto-sync cada 60 segundos en background (sin loader, silencioso)
   _autoRefresh = setInterval(()=>syncNow(true), 60000);
