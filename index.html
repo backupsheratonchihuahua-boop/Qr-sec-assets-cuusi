@@ -22,7 +22,6 @@ const _CFG = {
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 
 <style>
@@ -339,6 +338,43 @@ select.inp{appearance:none;cursor:pointer}
   .status-activo{ background:#fff3cd; color:#856404; padding:1mm 2mm; border-radius:1mm; font-size:7pt; font-weight:bold; }
   .status-devuelto{ background:#d1e7dd; color:#0a3622; padding:1mm 2mm; border-radius:1mm; font-size:7pt; font-weight:bold; }
   .status-pendiente{ background:#f8d7da; color:#842029; padding:1mm 2mm; border-radius:1mm; font-size:7pt; font-weight:bold; }
+
+  /* ── Bitácora de turno (landscape) ── */
+  #bitacora-print-area { font-family:Arial,sans-serif; font-size:7pt; color:#000; }
+  .bt-header { display:flex; align-items:center; gap:4mm; border-bottom:2pt solid #c9a84c; padding-bottom:3mm; margin-bottom:2mm; }
+  .bt-logo { width:14mm; height:14mm; border-radius:50%; }
+  .bt-hotel { font-size:12pt; font-weight:bold; color:#07091a; display:block; }
+  .bt-dept { font-size:7pt; color:#7d6225; text-transform:uppercase; letter-spacing:.1em; display:block; }
+  .bt-doctitle { font-size:9pt; font-weight:bold; color:#07091a; display:block; }
+  .bt-meta { display:flex; gap:4mm; margin-bottom:2mm; }
+  .bt-mitem { border:0.5pt solid #d0cdc5; border-radius:1.5mm; padding:1.5mm 2.5mm; flex:1; }
+  .bt-mlabel { font-size:6pt; color:#888; text-transform:uppercase; display:block; }
+  .bt-mline { border-bottom:0.8pt solid #07091a; min-height:5mm; display:block; margin-top:1mm; }
+  .bt-nota { background:#fdf8ee; border:0.5pt solid #c9a84c; padding:1.5mm 3mm; font-size:6.5pt; color:#7d6225; margin-bottom:2mm; }
+  .bt-turno { margin-bottom:2mm; }
+  .bt-turno:last-child { margin-bottom:0; }
+  .bt-thdr { display:flex; align-items:center; gap:8mm; padding:1.5mm 3mm; color:white; }
+  .bt-tnum { font-size:8.5pt; font-weight:bold; white-space:nowrap; min-width:45mm; }
+  .bt-tguardias { font-size:7pt; }
+  .bt-sublabels { display:flex; margin:1mm 0 0.5mm; }
+  .bt-lp { flex:1; font-size:6.5pt; font-weight:bold; color:#7d6225; padding-left:1mm; }
+  .bt-ld { flex:1; font-size:6.5pt; font-weight:bold; color:#1a7040; padding-left:3mm; }
+  .bt-tables { display:flex; gap:2mm; }
+  .bt-table { border-collapse:collapse; font-size:6.5pt; }
+  .bt-loan { flex:1; }
+  .bt-ret  { flex:1; }
+  .bt-table th { padding:1.5mm 2mm; text-align:center; font-size:6pt; font-weight:bold; }
+  .bt-loan thead { background:#c9a84c; color:#07091a; }
+  .bt-ret  thead { background:#27a85a; color:#fff; }
+  .bt-table td { padding:0 2mm; border:0.4pt solid #d0cdc5; height:8mm; vertical-align:middle; }
+  .bt-table tr:nth-child(even) td { background:#f7f6f2; }
+  .bt-sign { display:flex; align-items:stretch; gap:0; border:0.5pt solid #d0cdc5; min-height:10mm; }
+  .bt-obs { padding:2mm 3mm; font-size:6.5pt; font-weight:bold; color:#07091a; white-space:nowrap; display:flex; align-items:center; }
+  .bt-obs-space { flex:1; border-left:0.4pt solid #d0cdc5; border-right:0.4pt solid #d0cdc5; }
+  .bt-sig { padding:1.5mm 3mm; text-align:center; font-size:6.5pt; color:#07091a; min-width:36mm; display:flex; flex-direction:column; justify-content:center; }
+  .bt-sigline { border-bottom:1pt solid #07091a; margin:2mm 0 1mm; }
+  .bt-sep { border-bottom:0.7pt solid #d0cdc5; margin:2mm 0; }
+  .bt-footer { font-size:5.5pt; color:#aaa; text-align:center; border-top:0.5pt solid #d0cdc5; padding-top:1.5mm; margin-top:2mm; }
 }
 
 /* Hidden print areas (visible only on print) */
@@ -680,7 +716,47 @@ select.inp{appearance:none;cursor:pointer}
 
 <!-- ══ BITÁCORA DE TURNO (imprimible) ══ -->
 <div id="bitacora-print-area">
-  <!-- Estilos de bitácora movidos al @media print global -->
+  <!-- Estilos exclusivos de impresión para la bitácora landscape -->
+  <style>
+  @media print {
+    @page { size: landscape; margin: 8mm; }
+    #bitacora-print-area { font-family: Arial, sans-serif; font-size: 7pt; color: #000; }
+    .bt-header { display:flex; align-items:center; gap:4mm; border-bottom:2pt solid #c9a84c; padding-bottom:3mm; margin-bottom:2mm; }
+    .bt-logo { width:14mm; height:14mm; border-radius:50%; }
+    .bt-hotel { font-size:12pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-dept { font-size:7pt; color:#7d6225; text-transform:uppercase; letter-spacing:.1em; display:block; }
+    .bt-doctitle { font-size:9pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-meta { display:flex; gap:4mm; margin-bottom:2mm; }
+    .bt-mitem { border:0.5pt solid #d0cdc5; border-radius:1.5mm; padding:1.5mm 2.5mm; flex:1; }
+    .bt-mlabel { font-size:6pt; color:#888; text-transform:uppercase; display:block; }
+    .bt-mline { border-bottom:0.8pt solid #07091a; min-height:5mm; display:block; margin-top:1mm; }
+    .bt-nota { background:#fdf8ee; border:0.5pt solid #c9a84c; padding:1.5mm 3mm; font-size:6.5pt; color:#7d6225; margin-bottom:2mm; }
+    .bt-turno { margin-bottom:2mm; }
+    .bt-turno:last-child { margin-bottom:0; }
+    .bt-thdr { display:flex; align-items:center; gap:8mm; padding:1.5mm 3mm; color:white; }
+    .bt-tnum { font-size:8.5pt; font-weight:bold; white-space:nowrap; min-width:45mm; }
+    .bt-tguardias { font-size:7pt; }
+    .bt-sublabels { display:flex; margin:1mm 0 0.5mm; }
+    .bt-lp { flex:1; font-size:6.5pt; font-weight:bold; color:#7d6225; padding-left:1mm; }
+    .bt-ld { flex:1; font-size:6.5pt; font-weight:bold; color:#1a7040; padding-left:3mm; }
+    .bt-tables { display:flex; gap:2mm; }
+    .bt-table { border-collapse:collapse; font-size:6.5pt; }
+    .bt-loan { flex:1; }
+    .bt-ret  { flex:1; }
+    .bt-table th { padding:1.5mm 2mm; text-align:center; font-size:6pt; font-weight:bold; }
+    .bt-loan thead { background:#c9a84c; color:#07091a; }
+    .bt-ret  thead { background:#27a85a; color:#fff; }
+    .bt-table td { padding:0 2mm; border:0.4pt solid #d0cdc5; height:8mm; vertical-align:middle; }
+    .bt-table tr:nth-child(even) td { background:#f7f6f2; }
+    .bt-sign { display:flex; align-items:stretch; gap:0; border:0.5pt solid #d0cdc5; min-height:10mm; }
+    .bt-obs { padding:2mm 3mm; font-size:6.5pt; font-weight:bold; color:#07091a; white-space:nowrap; display:flex; align-items:center; }
+    .bt-obs-space { flex:1; border-left:0.4pt solid #d0cdc5; border-right:0.4pt solid #d0cdc5; }
+    .bt-sig { padding:1.5mm 3mm; text-align:center; font-size:6.5pt; color:#07091a; min-width:36mm; display:flex; flex-direction:column; justify-content:center; }
+    .bt-sigline { border-bottom:1pt solid #07091a; margin:2mm 0 1mm; }
+    .bt-sep { border-bottom:0.7pt solid #d0cdc5; margin:2mm 0; }
+    .bt-footer { font-size:5.5pt; color:#aaa; text-align:center; border-top:0.5pt solid #d0cdc5; padding-top:1.5mm; margin-top:2mm; }
+  }
+  </style>
 
   <!-- Encabezado -->
   <div class="bt-header">
@@ -912,7 +988,6 @@ select.inp{appearance:none;cursor:pointer}
 </div>
 
 
-<div id="loader"><div class="spin" style="font-size:28px">⏳</div><div id="ld-txt">Conectando…</div></div>
 <div id="toast"></div>
 
 <div id="modal">
@@ -1094,20 +1169,16 @@ function renderHome() {
   const base=window.location.href.replace(/[?#].*/,'');
   document.getElementById('qr-wrap').innerHTML=`
     <div class="qr-wrap">
-      <div id="qr-home-sol" style="display:inline-block;background:#0c1026;padding:6px;border-radius:6px"></div>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=0c1026&color=c9a84c&format=png&qzone=1" width="160" height="160" alt="QR">
       <div class="qr-label" style="color:var(--gold)">Solicitud de equipo</div>
       <div class="qr-sub">Escanea con la cámara</div>
     </div>
     <div class="qr-wrap qr-g">
-      <div id="qr-home-ret" style="display:inline-block;background:#0c1026;padding:6px;border-radius:6px"></div>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=0c1026&color=27a85a&format=png&qzone=1" width="160" height="160" alt="QR">
       <div class="qr-label" style="color:var(--green)">Registrar regreso</div>
       <div class="qr-sub">Escanea con la cámara</div>
     </div>
   `;
-  try {
-    new QRCode(document.getElementById('qr-home-sol'),{text:base+'?v=solicitud',width:160,height:160,colorDark:'#c9a84c',colorLight:'#0c1026',correctLevel:QRCode.CorrectLevel.M});
-    new QRCode(document.getElementById('qr-home-ret'),{text:base+'?v=regreso',width:160,height:160,colorDark:'#27a85a',colorLight:'#0c1026',correctLevel:QRCode.CorrectLevel.M});
-  } catch(_) {}
   let html='';
   if(act.length>0){
     html=`<div class="card" style="padding:12px 14px"><div style="font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">📋 Equipos actualmente prestados (${act.length})</div>`;
@@ -1463,21 +1534,17 @@ async function submitRegreso(){
 // ── 2FA ───────────────────────────────────────────────────────────────────
 async function verify2FA(){
   const code=(document.getElementById('i-2fa').value||'').trim();
-  const errEl=document.getElementById('fa-err');
-  if(code.length!==6){ errEl.textContent='⚠ El código debe tener 6 dígitos.'; errEl.style.display='block'; return; }
+  if(code.length!==6){ document.getElementById('fa-err').style.display='block'; return; }
   loading('Verificando 2FA…');
   try {
     const r=await api('verify2fa',{code});
     sessionToken=r.sessionToken;
-    sessionStorage.removeItem(SK_SES);
+    sessionStorage.removeItem(SK_SES); // limpiar cualquier token viejo guardado
     document.getElementById('gate-2fa').style.display='none';
     document.getElementById('dash').style.display='block';
-    errEl.style.display='none';
+    document.getElementById('fa-err').style.display='none';
     reloadDash();
-  } catch(e){
-    errEl.textContent='⚠ ' + (e.message||'Error al verificar. Intenta de nuevo.');
-    errEl.style.display='block';
-  }
+  } catch(_){ document.getElementById('fa-err').style.display='block'; }
   doneLoading();
 }
 
@@ -1676,28 +1743,29 @@ function printReport(){
 // ── Print QR ──────────────────────────────────────────────────────────────
 function printQR(){
   const base = window.location.href.replace(/[?#].*/,'');
-
-  // Reemplazar img con divs para QRCode.js
-  const solDiv = document.createElement('div'); solDiv.id='qr-sol-gen';
-  const retDiv = document.createElement('div'); retDiv.id='qr-ret-gen';
   const solImg = document.getElementById('qr-sol-print');
   const retImg = document.getElementById('qr-ret-print');
-  solImg.replaceWith(solDiv);
-  retImg.replaceWith(retDiv);
 
-  // Generar QR localmente — QRCode.js no necesita internet
-  try {
-    new QRCode(solDiv,{text:base+'?v=solicitud',width:280,height:280,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
-    new QRCode(retDiv,{text:base+'?v=regreso',width:280,height:280,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
-  } catch(_) {}
+  // Reset handlers
+  solImg.onload = solImg.onerror = retImg.onload = retImg.onerror = null;
 
-  // Imprimir y restaurar los img originales
-  _doPrint('qr-print-area');
-  setTimeout(()=>{
-    const s=document.getElementById('qr-sol-gen'); const r=document.getElementById('qr-ret-gen');
-    if(s){const i=document.createElement('img');i.id='qr-sol-print';i.src='';i.alt='QR';s.replaceWith(i);}
-    if(r){const i=document.createElement('img');i.id='qr-ret-print';i.src='';i.alt='QR';r.replaceWith(i);}
-  },1200);
+  const solSrc = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=solicitud')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
+  const retSrc = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(base+'?v=regreso')}&bgcolor=ffffff&color=000000&format=png&qzone=2`;
+
+  // Single-fire flag
+  let fired=false, loadCount=0;
+  const tryPrint = ()=>{
+    if(fired) return;
+    if(++loadCount < 2) return;
+    fired=true;
+    solImg.onload = solImg.onerror = retImg.onload = retImg.onerror = null;
+    _doPrint('qr-print-area');
+  };
+
+  solImg.onload = solImg.onerror = tryPrint;
+  retImg.onload = retImg.onerror = tryPrint;
+  solImg.src = solSrc;
+  retImg.src = retSrc;
 }
 
 // ── 2FA Setup ─────────────────────────────────────────────────────────────
@@ -1856,11 +1924,15 @@ function renderInvTable(){
 
 // ── Bitácora de turno ─────────────────────────────────────────────────────
 // ── Bitácora — imprime hoja de hoy en blanco ──────────────────────────────
+function _addLandscape(){ const s=document.createElement('style'); s.id='bt-page-style'; s.textContent='@media print{@page{size:landscape;margin:8mm}}'; document.head.appendChild(s); }
+function _rmLandscape(){ const e=document.getElementById('bt-page-style'); if(e) e.remove(); }
+
 function printBitacoraDia(){
+  _addLandscape();
   _doPrint('bitacora-print-area');
+  setTimeout(_rmLandscape, 1500);
 }
 
-// Alias para compatibilidad
 function printBitacora(){ printBitacoraDia(); }
 
 // ── Lote semanal ──────────────────────────────────────────────────────────
@@ -1871,32 +1943,24 @@ function showLoteModal(){
   document.getElementById('lote-chips').innerHTML = opts.map(n=>
     `<button class="chip${_loteN===n?' on':''}" onclick="_loteN=${n};
       document.querySelectorAll('#lote-chips .chip').forEach(b=>b.classList.remove('on'));
-      this.classList.add('on')">${n} ${n===1?'hoja':n===7?'(1 semana)':n===14?'(2 sem.)':n===30?'(1 mes)':'hojas'}</button>`
+      this.classList.add('on')">${n===1?'1 hoja':n===7?'7 (semana)':n===14?'14 (2 sem.)':n===30?'30 (mes)':n+' hojas'}</button>`
   ).join('');
   document.getElementById('lote-modal').style.display='flex';
 }
 
 function printLote(){
   document.getElementById('lote-modal').style.display='none';
-  // Build N identical blank pages inside the bitacora area
-  // Each page is already designed as 1 day — just repeat it N times
   const area = document.getElementById('bitacora-print-area');
-  // Save original content
   const original = area.innerHTML;
-  // Get the repeatable content (everything after the <style> block)
-  const styleEnd = original.indexOf('</style>') + 8;
-  const styleBlock = original.substring(0, styleEnd);
-  const pageContent = original.substring(styleEnd);
-  // Build N copies with page breaks between them
-  let pages = styleBlock;
+  let pages = '';
   for(let i=0; i<_loteN; i++){
     if(i>0) pages += '<div style="page-break-before:always"></div>';
-    pages += pageContent;
+    pages += original;
   }
   area.innerHTML = pages;
+  _addLandscape();
   _doPrint('bitacora-print-area');
-  // Restore original after print dialog closes
-  setTimeout(()=>{ area.innerHTML = original; }, 1000);
+  setTimeout(()=>{ area.innerHTML = original; _rmLandscape(); }, 1500);
 }
 
 // ── Acta de cambio de turno ───────────────────────────────────────────────
