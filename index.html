@@ -386,9 +386,14 @@ select.inp{appearance:none;cursor:pointer}
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap" id="qr-wrap"></div>
         <div style="font-size:10px;color:var(--dim);text-align:center;margin-top:10px;line-height:1.6">Imprime y coloca en el escritorio de seguridad.<br>El personal escanea para gestionar préstamos.</div>
       </div>
-      <button class="hbtn-main" onclick="nav('sol1')"><span style="font-size:18px">📤</span> Registrar Préstamo de Equipo</button>
-      <button class="hbtn-sec"  onclick="nav('regreso')"><span style="font-size:18px">📥</span> Registrar Regreso de Equipo</button>
-      <button class="hbtn-adm"  onclick="nav('dashboard')">🔐 Panel de Seguridad — Historial</button>
+      <div style="background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">
+        <div style="font-size:12px;color:var(--dim);line-height:1.7">
+          Para solicitar o devolver equipo,<br>
+          <strong style="color:var(--gold)">escanea el código QR correspondiente</strong><br>
+          del escritorio de seguridad.
+        </div>
+      </div>
+      <button class="hbtn-adm" onclick="nav('dashboard')">🔐 Panel de Seguridad — Historial</button>
       <div id="home-active" style="margin-top:12px"></div>
     </div>
   </div>
@@ -447,10 +452,16 @@ select.inp{appearance:none;cursor:pointer}
   <!-- ═══ SOL 3 ═══ -->
   <div id="v-sol3" class="view">
     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px">Confirmación del Guardia</div>
-    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">El guardia registra su nombre al entregar el equipo físicamente.</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:14px">Solo el guardia presente puede autorizar este préstamo.</div>
     <div class="card card-s" id="s3-sum" style="margin-bottom:14px"></div>
     <div class="field"><label>Guardia que entrega el equipo <span class="req">*</span></label><input class="inp" id="i-guardia" type="text" placeholder="Nombre completo del guardia" autocomplete="off"></div>
-    <div class="alert alert-red">⚠ <strong>Responsabilidad:</strong> El empleado asume plena responsabilidad del equipo hasta devolverlo personalmente al Departamento de Seguridad, independientemente de la duración del evento.</div>
+    <div class="field" style="margin-top:10px">
+      <label>🔐 Código 2FA del guardia <span class="req">*</span></label>
+      <input class="inp inp-pin" id="i-pin-sol" type="tel" maxlength="6" inputmode="numeric" placeholder="• • • • • •" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,6)">
+      <div style="font-size:10px;color:var(--dim);margin-top:4px">El guardia abre Google Authenticator → <strong>Sheraton CHH Seguridad</strong> → ingresa el código de 6 dígitos.</div>
+    </div>
+    <div id="pin-sol-err" class="alert alert-red" style="display:none">⚠ Código incorrecto o expirado. Verifica en Google Authenticator.</div>
+    <div class="alert alert-red" style="margin-top:8px">⚠ <strong>Responsabilidad:</strong> El empleado asume plena responsabilidad del equipo hasta devolverlo personalmente al Departamento de Seguridad.</div>
     <div class="btn-row">
       <button class="btn btn-outline" onclick="step(2)">← Atrás</button>
       <button class="btn btn-gold btn-main" onclick="submitSolicitud()">✓ Confirmar Préstamo</button>
@@ -465,8 +476,11 @@ select.inp{appearance:none;cursor:pointer}
     <div class="folio-box" id="cf-folio"></div>
     <div class="card" id="cf-detail" style="text-align:left;margin-bottom:14px"></div>
     <div class="alert alert-amber" style="text-align:left">📋 El empleado es responsable del equipo hasta entregarlo de regreso al Depto. de Seguridad.</div>
-    <button class="btn btn-gold btn-full" onclick="nav('sol1')" style="margin-bottom:8px">+ Nuevo Préstamo</button>
-    <button class="btn btn-outline btn-full" onclick="nav('home')">← Inicio</button>
+    <div style="margin-top:14px;background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--dim);margin-bottom:6px">Esta pantalla se cerrará automáticamente en</div>
+      <div id="cf-countdown" style="font-size:28px;font-weight:700;color:var(--gold)">30</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px">segundos</div>
+    </div>
   </div>
 
   <!-- ═══ REGRESO ═══ -->
@@ -539,12 +553,14 @@ select.inp{appearance:none;cursor:pointer}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
         <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 Exportar Excel</button>
         <button class="btn btn-outline btn-sm" onclick="printReport()">🖨 Reporte</button>
-        <button class="btn btn-outline btn-sm" onclick="printBitacora()" style="color:var(--amber);border-color:rgba(230,126,34,.4)">📋 Bitácora de Turno</button>
+        <button class="btn btn-outline btn-sm" onclick="printBitacoraDia()" style="color:var(--amber);border-color:rgba(230,126,34,.4)">📋 Bitácora Hoy</button>
+        <button class="btn btn-outline btn-sm" onclick="showLoteModal()" style="color:var(--amber);border-color:rgba(230,126,34,.4)">📦 Lote Semanal</button>
         <button class="btn btn-outline btn-sm" onclick="printActa()" style="color:var(--green);border-color:rgba(39,168,90,.4)">📝 Acta de Turno</button>
         <button class="btn btn-outline btn-sm" onclick="showInventory()" style="color:var(--gold);border-color:rgba(201,168,76,.4)">📦 Inventario</button>
         <button class="btn btn-outline btn-sm" onclick="showDeptos()" style="color:var(--blue);border-color:rgba(90,138,224,.4)">🏢 Departamentos</button>
         <button class="btn btn-outline btn-sm" onclick="reloadDash()">↺ Actualizar</button>
         <button class="btn btn-outline btn-sm" style="color:var(--blue);border-color:rgba(90,138,224,.4)" onclick="showSetup2fa()">🔑 Config 2FA</button>
+        <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:rgba(220,50,50,.4)" onclick="showPinConfig()">🔐 PIN Guardia</button>
       </div>
 
       <!-- Inventario panel -->
@@ -585,6 +601,28 @@ select.inp{appearance:none;cursor:pointer}
         <div style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.6">Google Authenticator → <strong style="color:var(--text)">+</strong> → <strong style="color:var(--text)">Escanear código QR</strong></div>
         <div id="secret-2fa" style="margin-top:8px"></div>
         <button class="btn btn-outline btn-sm btn-full" style="margin-top:10px" onclick="document.getElementById('panel-setup2fa').style.display='none'">Cerrar</button>
+      </div>
+
+      <!-- Agentes de Seguridad panel -->
+      <div id="panel-pin" class="card" style="display:none;margin-top:14px">
+        <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;font-weight:700">🔐 Agentes de Seguridad — PINs Personales</div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.6">
+          Cada guardia tiene un PIN único. Al autorizar un préstamo o devolución, el sistema registra automáticamente qué guardia lo aprobó. Sin PIN válido, la operación no se puede completar.
+        </div>
+        <div id="agent-list" style="margin-bottom:12px"></div>
+        <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px">
+          <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-weight:700">+ Agregar Guardia</div>
+          <div class="field" style="margin-bottom:8px">
+            <label>Nombre del guardia</label>
+            <input class="inp" id="agent-nombre" type="text" placeholder="Ej. Miguel Rodríguez" autocomplete="off">
+          </div>
+          <div style="font-size:10px;color:var(--dim);margin-bottom:8px;line-height:1.5">
+            Al agregar, el sistema genera automáticamente el código 2FA. Se mostrará un QR para que el guardia lo escanee con Google Authenticator.
+          </div>
+          <button class="btn btn-gold btn-sm btn-full" onclick="addAgent()">+ Agregar y Generar QR</button>
+        </div>
+        <div id="pin-msg" class="alert" style="display:none;margin-bottom:8px"></div>
+        <button class="btn btn-outline btn-sm btn-full" onclick="document.getElementById('panel-pin').style.display='none'">Cerrar</button>
       </div>
     </div>
   </div>
@@ -678,57 +716,177 @@ select.inp{appearance:none;cursor:pointer}
 
 <!-- ══ BITÁCORA DE TURNO (imprimible) ══ -->
 <div id="bitacora-print-area">
-  <div class="doc-page">
-    <div class="doc-header">
-      <img src="data:image/png;base64,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" class="doc-logo" alt="Sheraton">
-      <div>
-        <span class="doc-hotel">Sheraton Chihuahua Soberano</span>
-        <span class="doc-dept">Departamento de Seguridad</span>
-        <span class="doc-title">Bitácora de Préstamo de Equipos</span>
+  <!-- Estilos exclusivos de impresión para la bitácora landscape -->
+  <style>
+  @media print {
+    @page { size: landscape; margin: 8mm; }
+    #bitacora-print-area { font-family: Arial, sans-serif; font-size: 7pt; color: #000; }
+    .bt-header { display:flex; align-items:center; gap:4mm; border-bottom:2pt solid #c9a84c; padding-bottom:3mm; margin-bottom:2mm; }
+    .bt-logo { width:14mm; height:14mm; border-radius:50%; }
+    .bt-hotel { font-size:12pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-dept { font-size:7pt; color:#7d6225; text-transform:uppercase; letter-spacing:.1em; display:block; }
+    .bt-doctitle { font-size:9pt; font-weight:bold; color:#07091a; display:block; }
+    .bt-meta { display:flex; gap:4mm; margin-bottom:2mm; }
+    .bt-mitem { border:0.5pt solid #d0cdc5; border-radius:1.5mm; padding:1.5mm 2.5mm; flex:1; }
+    .bt-mlabel { font-size:6pt; color:#888; text-transform:uppercase; display:block; }
+    .bt-mline { border-bottom:0.8pt solid #07091a; min-height:5mm; display:block; margin-top:1mm; }
+    .bt-nota { background:#fdf8ee; border:0.5pt solid #c9a84c; padding:1.5mm 3mm; font-size:6.5pt; color:#7d6225; margin-bottom:2mm; }
+    .bt-turno { margin-bottom:2mm; }
+    .bt-turno:last-child { margin-bottom:0; }
+    .bt-thdr { display:flex; align-items:center; gap:8mm; padding:1.5mm 3mm; color:white; }
+    .bt-tnum { font-size:8.5pt; font-weight:bold; white-space:nowrap; min-width:45mm; }
+    .bt-tguardias { font-size:7pt; }
+    .bt-sublabels { display:flex; margin:1mm 0 0.5mm; }
+    .bt-lp { flex:1; font-size:6.5pt; font-weight:bold; color:#7d6225; padding-left:1mm; }
+    .bt-ld { flex:1; font-size:6.5pt; font-weight:bold; color:#1a7040; padding-left:3mm; }
+    .bt-tables { display:flex; gap:2mm; }
+    .bt-table { border-collapse:collapse; font-size:6.5pt; }
+    .bt-loan { flex:1; }
+    .bt-ret  { flex:1; }
+    .bt-table th { padding:1.5mm 2mm; text-align:center; font-size:6pt; font-weight:bold; }
+    .bt-loan thead { background:#c9a84c; color:#07091a; }
+    .bt-ret  thead { background:#27a85a; color:#fff; }
+    .bt-table td { padding:0 2mm; border:0.4pt solid #d0cdc5; height:8mm; vertical-align:middle; }
+    .bt-table tr:nth-child(even) td { background:#f7f6f2; }
+    .bt-sign { display:flex; align-items:stretch; gap:0; border:0.5pt solid #d0cdc5; min-height:10mm; }
+    .bt-obs { padding:2mm 3mm; font-size:6.5pt; font-weight:bold; color:#07091a; white-space:nowrap; display:flex; align-items:center; }
+    .bt-obs-space { flex:1; border-left:0.4pt solid #d0cdc5; border-right:0.4pt solid #d0cdc5; }
+    .bt-sig { padding:1.5mm 3mm; text-align:center; font-size:6.5pt; color:#07091a; min-width:36mm; display:flex; flex-direction:column; justify-content:center; }
+    .bt-sigline { border-bottom:1pt solid #07091a; margin:2mm 0 1mm; }
+    .bt-sep { border-bottom:0.7pt solid #d0cdc5; margin:2mm 0; }
+    .bt-footer { font-size:5.5pt; color:#aaa; text-align:center; border-top:0.5pt solid #d0cdc5; padding-top:1.5mm; margin-top:2mm; }
+  }
+  </style>
+
+  <!-- Encabezado -->
+  <div class="bt-header">
+    <img src="data:image/png;base64,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" class="bt-logo" alt="Sheraton">
+    <div>
+      <span class="bt-hotel">Sheraton Chihuahua Soberano</span>
+      <span class="bt-dept">Departamento de Seguridad</span>
+      <span class="bt-doctitle">Bitácora Diaria — Comprobante de Préstamo de Equipos AV</span>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div class="bt-meta" style="justify-content:flex-end">
+        <div class="bt-mitem" style="min-width:45mm"><span class="bt-mlabel">Fecha</span><span class="bt-mline"></span></div>
+        <div class="bt-mitem" style="min-width:30mm"><span class="bt-mlabel">No. bitácora</span><span class="bt-mline"></span></div>
       </div>
     </div>
-    <div class="doc-meta">
-      <div class="doc-meta-item"><span class="doc-meta-label">Fecha</span><span class="doc-meta-value" id="bit-fecha"></span></div>
-      <div class="doc-meta-item"><span class="doc-meta-label">Turno</span><span class="doc-meta-value" id="bit-turno"></span></div>
-      <div class="doc-meta-item"><span class="doc-meta-label">Guardia responsable</span><span class="doc-meta-value"></span></div>
+  </div>
+
+  <!-- Nota de uso -->
+  <div class="bt-nota">
+    <b>Uso:</b> ① Empleado escanea QR dorado → sistema genera FOLIO → guardia lo anota y empleado firma. 
+    ② Al devolver: QR verde + confirmar equipo completo. 
+    ③ Cambio de turno: contar cajas físicas y firmar. 
+    <b>Detalle completo disponible en el sistema por FOLIO.</b>
+  </div>
+
+  
+  <div class="bt-turno">
+    <div class="bt-thdr" style="background:#07091a">
+      <span class="bt-tnum">TURNO 1  ·  06:00–14:00</span>
+      <span class="bt-tguardias">Guardia entrega: ___________________________   Guardia recibe: ___________________________</span>
     </div>
-    <table class="doc-table">
-      <thead><tr>
-        <th style="width:8%">Hora</th>
-        <th style="width:14%">Salón / Zona</th>
-        <th style="width:18%">Evento</th>
-        <th style="width:12%">Equipo</th>
-        <th style="width:14%">Empleado</th>
-        <th style="width:7%">No. Emp</th>
-        <th style="width:9%">Depto.</th>
-        <th style="width:8%">Folio</th>
-        <th style="width:10%">Firma empleado</th>
-      </tr></thead>
-      <tbody id="bit-body"></tbody>
-    </table>
-    <div class="doc-section-title">Devoluciones registradas en este turno</div>
-    <table class="doc-table">
-      <thead><tr>
-        <th style="width:8%">Hora reg.</th>
-        <th style="width:14%">Salón / Zona</th>
-        <th style="width:18%">Evento</th>
-        <th style="width:12%">Equipo</th>
-        <th style="width:14%">Empleado</th>
-        <th style="width:8%">Folio</th>
-        <th style="width:14%">Guardia recibe</th>
-        <th style="width:12%">Observaciones</th>
-      </tr></thead>
-      <tbody id="bit-ret-body"></tbody>
-    </table>
-    <div style="margin-top:6mm">
-      <div class="doc-section-title">Observaciones del turno</div>
-      <div style="border:0.5pt solid #ccc;border-radius:2mm;min-height:18mm;padding:2mm;"></div>
+    <div class="bt-sublabels">
+      <span class="bt-lp">📤 PRÉSTAMOS — anota folio y firma del empleado</span>
+      <span class="bt-ld">📥 DEVOLUCIONES — confirma que el equipo regresó completo</span>
     </div>
-    <div class="sign-area">
-      <div class="sign-box"><div class="sign-label">Guardia que entrega el turno</div><div class="sign-sub">Nombre y firma</div></div>
-      <div class="sign-box"><div class="sign-label">Guardia que recibe el turno</div><div class="sign-sub">Nombre y firma</div></div>
+    <div class="bt-tables">
+      <table class="bt-table bt-loan">
+        <thead><tr>
+          <th>Hora</th><th>Folio del Sistema<br>SHR-YYYYMMDD-XXXX</th>
+          <th>Caja</th><th>Salón / Zona o Equipo</th><th>Firma del Empleado</th>
+        </tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      </table>
+      <table class="bt-table bt-ret">
+        <thead><tr>
+          <th>Hora</th><th>Folio del Sistema<br>SHR-YYYYMMDD-XXXX</th>
+          <th>Caja</th><th>¿Completo?</th><th>Guardia recibe</th><th>Obs.</th>
+        </tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      </table>
     </div>
-    <div class="doc-footer">Sheraton Chihuahua Soberano · Depto. de Seguridad · Desarrollado por Depto. de Sistemas · Este documento debe conservarse por 30 días</div>
+    <div class="bt-sign" style="background:#fdf8ee">
+      <div class="bt-obs">Observaciones:</div>
+      <div class="bt-obs-space"></div>
+      <div class="bt-sig">Firma guardia entrega<div class="bt-sigline"></div>No. Emp.: ___________</div>
+      <div class="bt-sig">Firma guardia recibe<div class="bt-sigline"></div>No. Emp.: ___________</div>
+    </div>
+  </div>
+  <div class="bt-sep"></div>
+  
+  <div class="bt-turno">
+    <div class="bt-thdr" style="background:#1a4a7a">
+      <span class="bt-tnum">TURNO 2  ·  14:00–22:00</span>
+      <span class="bt-tguardias">Guardia entrega: ___________________________   Guardia recibe: ___________________________</span>
+    </div>
+    <div class="bt-sublabels">
+      <span class="bt-lp">📤 PRÉSTAMOS — anota folio y firma del empleado</span>
+      <span class="bt-ld">📥 DEVOLUCIONES — confirma que el equipo regresó completo</span>
+    </div>
+    <div class="bt-tables">
+      <table class="bt-table bt-loan">
+        <thead><tr>
+          <th>Hora</th><th>Folio del Sistema<br>SHR-YYYYMMDD-XXXX</th>
+          <th>Caja</th><th>Salón / Zona o Equipo</th><th>Firma del Empleado</th>
+        </tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      </table>
+      <table class="bt-table bt-ret">
+        <thead><tr>
+          <th>Hora</th><th>Folio del Sistema<br>SHR-YYYYMMDD-XXXX</th>
+          <th>Caja</th><th>¿Completo?</th><th>Guardia recibe</th><th>Obs.</th>
+        </tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      </table>
+    </div>
+    <div class="bt-sign" style="background:#eef3fb">
+      <div class="bt-obs">Observaciones:</div>
+      <div class="bt-obs-space"></div>
+      <div class="bt-sig">Firma guardia entrega<div class="bt-sigline"></div>No. Emp.: ___________</div>
+      <div class="bt-sig">Firma guardia recibe<div class="bt-sigline"></div>No. Emp.: ___________</div>
+    </div>
+  </div>
+  <div class="bt-sep"></div>
+  
+  <div class="bt-turno">
+    <div class="bt-thdr" style="background:#1a3a4a">
+      <span class="bt-tnum">TURNO 3  ·  22:00–06:00</span>
+      <span class="bt-tguardias">Guardia entrega: ___________________________   Guardia recibe: ___________________________</span>
+    </div>
+    <div class="bt-sublabels">
+      <span class="bt-lp">📤 PRÉSTAMOS — anota folio y firma del empleado</span>
+      <span class="bt-ld">📥 DEVOLUCIONES — confirma que el equipo regresó completo</span>
+    </div>
+    <div class="bt-tables">
+      <table class="bt-table bt-loan">
+        <thead><tr>
+          <th>Hora</th><th>Folio del Sistema<br>SHR-YYYYMMDD-XXXX</th>
+          <th>Caja</th><th>Salón / Zona o Equipo</th><th>Firma del Empleado</th>
+        </tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      </table>
+      <table class="bt-table bt-ret">
+        <thead><tr>
+          <th>Hora</th><th>Folio del Sistema<br>SHR-YYYYMMDD-XXXX</th>
+          <th>Caja</th><th>¿Completo?</th><th>Guardia recibe</th><th>Obs.</th>
+        </tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      </table>
+    </div>
+    <div class="bt-sign" style="background:#eef8fb">
+      <div class="bt-obs">Observaciones:</div>
+      <div class="bt-obs-space"></div>
+      <div class="bt-sig">Firma guardia entrega<div class="bt-sigline"></div>No. Emp.: ___________</div>
+      <div class="bt-sig">Firma guardia recibe<div class="bt-sigline"></div>No. Emp.: ___________</div>
+    </div>
+  </div>
+
+  <div class="bt-footer">
+    Sheraton Chihuahua Soberano · Departamento de Seguridad · 
+    Desarrollado por el Departamento de Sistemas · Conservar 30 días
   </div>
 </div>
 
@@ -806,7 +964,30 @@ select.inp{appearance:none;cursor:pointer}
   </div>
 </div>
 
-<div id="loader"><div class="spin" style="font-size:28px">⏳</div><div id="ld-txt">Conectando…</div></div>
+<!-- Lote semanal modal -->
+<div id="lote-modal" style="display:none;position:fixed;inset:0;background:rgba(7,9,26,.85);z-index:8500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:340px;width:100%">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--gold);margin-bottom:6px">📦 Imprimir Lote Semanal</div>
+    <div style="font-size:12px;color:var(--dim);margin-bottom:18px;line-height:1.6">
+      Genera bitácoras en blanco para entregar al gerente de seguridad.<br>
+      Cada hoja cubre <strong style="color:var(--text)">1 día completo</strong> con los 3 turnos.
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>¿Cuántas hojas imprimir?</label>
+      <div class="chips" style="margin-top:8px" id="lote-chips"></div>
+    </div>
+    <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--dim);margin-bottom:18px">
+      💡 <strong style="color:var(--text)">Recomendado:</strong> 7 hojas cada lunes — cubre toda la semana.<br>
+      Al imprimir el navegador mostrará el diálogo de impresión una vez para todas las hojas.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gold btn-main" onclick="printLote()" style="flex:1">🖨 Imprimir</button>
+      <button class="btn btn-outline" onclick="document.getElementById('lote-modal').style.display='none'">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
 <div id="toast"></div>
 
 <div id="modal">
@@ -1220,6 +1401,20 @@ async function submitSolicitud(){
   fGuardia=document.getElementById('i-guardia').value.trim();
   if(!fGuardia){ toast('Ingresa el nombre del guardia.','err'); return; }
 
+  // ── Validar código 2FA del guardia (identifica al agente) ───────────
+  const pinIngresado=(document.getElementById('i-pin-sol')||{}).value?.trim()||'';
+  const pinErr=document.getElementById('pin-sol-err');
+  if(pinErr) pinErr.style.display='none';
+  if(pinIngresado.length!==6){ if(pinErr) pinErr.style.display='block'; return; }
+  loading('Verificando código del guardia…');
+  currentAgent = await _checkPIN(pinIngresado);
+  if(!currentAgent){
+    doneLoading();
+    if(pinErr) pinErr.style.display='block';
+    toast('⚠ Código incorrecto o expirado.','err'); return;
+  }
+  if(!fGuardia) fGuardia = currentAgent;
+
   const allItems=_buildSelItems();
   if(!allItems.length){ toast('No hay equipos seleccionados.','err'); return; }
 
@@ -1269,6 +1464,7 @@ async function submitSolicitud(){
       <div class="srow"><span class="sk">Fecha y hora</span><span class="sv2">${fmt(now)}</span></div>
     `;
     showView('confirmacion');
+    startConfirmationCountdown();
   } catch(e){ toast('Error: '+e.message,'err'); }
   doneLoading();
 }
@@ -1327,6 +1523,11 @@ function renderRetFound(){
       ${rows.map(([k,v])=>`<div class="srow"><span class="sk">${esc(k)}</span><span class="sv2" style="color:${k==='Folio'?'var(--gold)':'var(--text)'}">${esc(v)}</span></div>`).join('')}
     </div>
     <div class="field"><label>Guardia que recibe el equipo <span class="req">*</span></label><input class="inp" id="i-gret" type="text" placeholder="Nombre completo del guardia" autocomplete="off"></div>
+    <div class="field" style="margin-top:10px">
+      <label>🔐 Código 2FA del guardia <span class="req">*</span></label>
+      <input class="inp inp-pin" id="i-pin-ret" type="tel" maxlength="6" inputmode="numeric" placeholder="• • • • • •" autocomplete="off" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)">
+      <div style="font-size:10px;color:var(--dim);margin-top:4px">El guardia abre Google Authenticator → <strong>Sheraton CHH Seguridad</strong> → ingresa el código de 6 dígitos.</div>
+    </div>
     <div id="ret-found-err" class="alert alert-red" style="display:none"></div>
     <div class="alert alert-green">✓ Al confirmar, el préstamo se cerrará y todos los equipos del kit quedarán como devueltos.</div>
     <button class="btn btn-green btn-full" onclick="submitRegreso()">✓ Confirmar Devolución del Equipo</button>
@@ -1337,6 +1538,19 @@ async function submitRegreso(){
   const g=(document.getElementById('i-gret')||{}).value?.trim();
   const errEl=document.getElementById('ret-found-err');
   if(!g){ errEl.textContent='Ingresa el nombre del guardia que recibe.'; errEl.style.display='block'; return; }
+
+  // ── Validar código 2FA del guardia (identifica al agente) ───────────
+  const pinRet=(document.getElementById('i-pin-ret')||{}).value?.trim()||'';
+  if(pinRet.length!==6){ errEl.textContent='Ingresa el código de 6 dígitos de Google Authenticator.'; errEl.style.display='block'; return; }
+  loading('Verificando código del guardia…');
+  currentAgent = await _checkPIN(pinRet);
+  if(!currentAgent){
+    doneLoading();
+    errEl.textContent='⚠ Código incorrecto o expirado. Verifica en Google Authenticator.';
+    errEl.style.display='block'; return;
+  }
+  if(!g) g = currentAgent;
+
   loading('Registrando devolución…');
   try {
     await api('returnLoan',{id:rFound.id,guardia:g});
@@ -1348,6 +1562,149 @@ async function submitRegreso(){
     rFound=null; showView('regreso'); setTimeout(renderRegreso,50);
   } catch(e){ toast('Error: '+e.message,'err'); }
   doneLoading();
+}
+
+// ── 2FA TOTP por Guardia ──────────────────────────────────────────────────
+// Cada guardia instala Google Authenticator con su cuenta individual.
+// El servidor valida el código de 6 dígitos y devuelve el nombre del guardia.
+// Sin el código válido del momento, ninguna operación se puede completar.
+
+let currentAgent = null; // nombre del guardia que autorizó la operación actual
+
+// Verifica el código TOTP contra el servidor y devuelve el nombre del agente
+async function _checkPIN(code){
+  if(!code||code.length!==6) return null;
+  try {
+    const r = await api('verifyGuardTOTP',{code});
+    return r.agent ? r.agent.nombre : null;
+  } catch(_){ return null; }
+}
+
+// ── Gestión de guardias desde el panel admin ──────────────────────────────
+let _guardsList = [];
+
+function showPinConfig(){
+  document.getElementById('panel-pin').style.display='block';
+  document.getElementById('panel-setup2fa').style.display='none';
+  document.getElementById('pin-msg').style.display='none';
+  document.getElementById('agent-nombre').value='';
+  loadGuardsList();
+}
+
+async function loadGuardsList(){
+  try {
+    const r = await api('getGuards',{});
+    _guardsList = r.guards||[];
+    renderAgentList();
+  } catch(e){ toast('Error cargando guardias: '+e.message,'err'); }
+}
+
+function renderAgentList(){
+  const el = document.getElementById('agent-list');
+  if(!_guardsList.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--dim);padding:8px 0;text-align:center">No hay guardias registrados. Agrega el primero.</div>';
+    return;
+  }
+  el.innerHTML = _guardsList.map(g=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${esc(g.nombre)}</div>
+        <div style="font-size:10px;color:${g.activo?'var(--green)':'var(--red)'}">
+          ${g.activo?'✓ Activo':'✗ Inactivo'}
+        </div>
+      </div>
+      <button onclick="showGuardQR(${g.id},'${esc(g.nombre)}')" style="background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:5px;padding:4px 9px;cursor:pointer;font-size:11px">📱 QR</button>
+      <button onclick="removeGuard(${g.id},'${esc(g.nombre)}')" style="background:transparent;border:1px solid var(--red);color:var(--red);border-radius:5px;padding:4px 9px;cursor:pointer;font-size:11px">✕</button>
+    </div>
+  `).join('');
+}
+
+async function addAgent(){
+  const nombre = document.getElementById('agent-nombre').value.trim();
+  const msg    = document.getElementById('pin-msg');
+  if(!nombre){ msg.className='alert alert-red'; msg.textContent='Ingresa el nombre del guardia.'; msg.style.display='block'; return; }
+  loading('Creando cuenta 2FA para '+nombre+'…');
+  try {
+    const r = await api('addGuard',{nombre});
+    msg.className='alert alert-green';
+    msg.textContent=`✅ "${nombre}" agregado. Pídele que escanee su QR con Google Authenticator.`;
+    msg.style.display='block';
+    document.getElementById('agent-nombre').value='';
+    // Mostrar QR inmediatamente
+    _showQRModal(nombre, r.qrUrl, r.secret);
+    await loadGuardsList();
+    toast('✅ Guardia registrado.');
+  } catch(e){ msg.className='alert alert-red'; msg.textContent='Error: '+e.message; msg.style.display='block'; }
+  doneLoading();
+}
+
+async function removeGuard(id, nombre){
+  if(!confirm('¿Eliminar a '+nombre+'? Su acceso quedará revocado de inmediato.')) return;
+  loading('Eliminando guardia…');
+  try {
+    await api('removeGuard',{guardId:id});
+    await loadGuardsList();
+    toast('Guardia eliminado.');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+  doneLoading();
+}
+
+async function showGuardQR(id, nombre){
+  loading('Cargando QR de '+nombre+'…');
+  try {
+    // Re-add to get fresh QR (same secret)
+    const guards = (await api('getGuards',{})).guards||[];
+    const g = guards.find(x=>x.id===id);
+    if(!g){ toast('Guardia no encontrado.','err'); doneLoading(); return; }
+    // Build otpauth URL using server-generated QR
+    const r = await api('addGuard',{nombre:'__QR_ONLY__'+id});
+    // Actually just show a message to re-register if needed
+    toast('Para mostrar el QR, elimina al guardia y agrégalo de nuevo.','warn');
+  } catch(e){ toast('Error: '+e.message,'err'); }
+  doneLoading();
+}
+
+function _showQRModal(nombre, qrUrl, secret){
+  const modal = document.getElementById('modal');
+  document.getElementById('modal-body').innerHTML=`
+    <div style="text-align:center">
+      <div style="font-size:13px;color:var(--dim);margin-bottom:10px">
+        El guardia <strong style="color:var(--gold)">${esc(nombre)}</strong> debe escanear este QR<br>
+        con Google Authenticator en su teléfono.
+      </div>
+      <img src="${esc(qrUrl)}" width="200" height="200" style="border:4px solid var(--gold);border-radius:8px;background:white;padding:4px">
+      <div style="margin-top:10px;font-size:11px;color:var(--dim)">
+        O ingresa la clave manual:<br>
+        <code style="color:var(--gold);font-size:13px;letter-spacing:.1em">${esc(secret)}</code>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--dim);line-height:1.6">
+        Pasos: Abrir Google Authenticator → + → Escanear QR<br>
+        La cuenta aparecerá como <strong>Sheraton CHH: ${esc(nombre)}</strong>
+      </div>
+    </div>
+  `;
+  document.getElementById('modal').style.display='flex';
+}
+
+function savePIN(){ addAgent(); }
+
+// ── Auto-cierre de pantalla de confirmación ───────────────────────────────
+let _cfTimer=null, _cfCountdown=null;
+function startConfirmationCountdown(){
+  let secs=30;
+  const el=document.getElementById('cf-countdown');
+  if(_cfTimer) clearInterval(_cfTimer);
+  if(_cfCountdown) clearInterval(_cfCountdown);
+  if(el) el.textContent=secs;
+  _cfCountdown=setInterval(()=>{
+    secs--;
+    if(el) el.textContent=secs;
+    if(secs<=0){
+      clearInterval(_cfCountdown);
+      clearInterval(_cfTimer);
+      nav('home');
+    }
+  },1000);
 }
 
 // ── 2FA ───────────────────────────────────────────────────────────────────
@@ -1742,57 +2099,48 @@ function renderInvTable(){
 // Inventario ahora se edita directamente en Google Sheets → hoja Inventario
 
 // ── Bitácora de turno ─────────────────────────────────────────────────────
-function printBitacora(){
-  const now = new Date();
-  const h   = now.getHours();
-  const turno = h>=6&&h<14?'1er Turno (06:00–14:00)':h>=14&&h<22?'2do Turno (14:00–22:00)':'3er Turno (22:00–06:00)';
-
-  document.getElementById('bit-fecha').textContent = now.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('bit-turno').textContent = turno;
-
-  // Préstamos activos del sistema (para pre-llenar)
-  const act = actives();
-  const retHoy = loans.filter(l=>l.estado==='devuelto'&&l.fechaRegreso>=(new Date().setHours(0,0,0,0)));
-
-  // Filas de préstamos activos (pre-llenadas) + filas vacías para manual
-  let bodyHtml = act.map(l=>`
-    <tr>
-      <td>${fmt(l.fechaSalida).split(' ')[1]||'—'}</td>
-      <td>${l.caja?'C.'+l.caja+' ':''}${esc(l.salon||'Compartido')}${l.zona?' Z.'+esc(l.zona):''}</td>
-      <td>${esc(l.evento||'—')}</td>
-      <td style="font-size:7pt">${esc((l.kit||'').split('—')[0])}</td>
-      <td>${esc(l.empleado)}</td>
-      <td>${esc(l.numeroEmpleado)}</td>
-      <td>${esc(l.departamento)}</td>
-      <td style="font-family:monospace;font-size:7pt">${esc(l.id)}</td>
-      <td></td>
-    </tr>
-  `).join('');
-  // Add empty rows for manual entries
-  for(let i=0;i<Math.max(3,8-act.length);i++){
-    bodyHtml+=`<tr>${'<td style="height:7mm"></td>'.repeat(9)}</tr>`;
-  }
-  document.getElementById('bit-body').innerHTML = bodyHtml;
-
-  // Devoluciones de hoy
-  let retHtml = retHoy.slice(-8).map(l=>`
-    <tr>
-      <td>${l.fechaRegreso?fmt(l.fechaRegreso).split(' ')[1]:'—'}</td>
-      <td>${esc(l.salon)}${l.zona?' Z.'+esc(l.zona):''}</td>
-      <td>${esc(l.evento||'—')}</td>
-      <td style="font-size:7pt">${esc((l.kit||'').split('—')[0])}</td>
-      <td>${esc(l.empleado)}</td>
-      <td style="font-family:monospace;font-size:7pt">${esc(l.id)}</td>
-      <td>${esc(l.personalRegreso||'—')}</td>
-      <td></td>
-    </tr>
-  `).join('');
-  for(let i=0;i<Math.max(3,6-retHoy.length);i++){
-    retHtml+=`<tr>${'<td style="height:7mm"></td>'.repeat(8)}</tr>`;
-  }
-  document.getElementById('bit-ret-body').innerHTML = retHtml;
-
+// ── Bitácora — imprime hoja de hoy en blanco ──────────────────────────────
+function printBitacoraDia(){
   _doPrint('bitacora-print-area');
+}
+
+// Alias para compatibilidad
+function printBitacora(){ printBitacoraDia(); }
+
+// ── Lote semanal ──────────────────────────────────────────────────────────
+let _loteN = 7;
+function showLoteModal(){
+  _loteN = 7;
+  const opts = [1,3,5,7,10,14,30];
+  document.getElementById('lote-chips').innerHTML = opts.map(n=>
+    `<button class="chip${_loteN===n?' on':''}" onclick="_loteN=${n};
+      document.querySelectorAll('#lote-chips .chip').forEach(b=>b.classList.remove('on'));
+      this.classList.add('on')">${n} ${n===1?'hoja':n===7?'(1 semana)':n===14?'(2 sem.)':n===30?'(1 mes)':'hojas'}</button>`
+  ).join('');
+  document.getElementById('lote-modal').style.display='flex';
+}
+
+function printLote(){
+  document.getElementById('lote-modal').style.display='none';
+  // Build N identical blank pages inside the bitacora area
+  // Each page is already designed as 1 day — just repeat it N times
+  const area = document.getElementById('bitacora-print-area');
+  // Save original content
+  const original = area.innerHTML;
+  // Get the repeatable content (everything after the <style> block)
+  const styleEnd = original.indexOf('</style>') + 8;
+  const styleBlock = original.substring(0, styleEnd);
+  const pageContent = original.substring(styleEnd);
+  // Build N copies with page breaks between them
+  let pages = styleBlock;
+  for(let i=0; i<_loteN; i++){
+    if(i>0) pages += '<div style="page-break-before:always"></div>';
+    pages += pageContent;
+  }
+  area.innerHTML = pages;
+  _doPrint('bitacora-print-area');
+  // Restore original after print dialog closes
+  setTimeout(()=>{ area.innerHTML = original; }, 1000);
 }
 
 // ── Acta de cambio de turno ───────────────────────────────────────────────
