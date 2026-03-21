@@ -912,6 +912,7 @@ select.inp{appearance:none;cursor:pointer}
 </div>
 
 
+<div id="loader"><div class="spin" style="font-size:28px">⏳</div><div id="ld-txt">Conectando…</div></div>
 <div id="toast"></div>
 
 <div id="modal">
@@ -1462,17 +1463,21 @@ async function submitRegreso(){
 // ── 2FA ───────────────────────────────────────────────────────────────────
 async function verify2FA(){
   const code=(document.getElementById('i-2fa').value||'').trim();
-  if(code.length!==6){ document.getElementById('fa-err').style.display='block'; return; }
+  const errEl=document.getElementById('fa-err');
+  if(code.length!==6){ errEl.textContent='⚠ El código debe tener 6 dígitos.'; errEl.style.display='block'; return; }
   loading('Verificando 2FA…');
   try {
     const r=await api('verify2fa',{code});
     sessionToken=r.sessionToken;
-    sessionStorage.removeItem(SK_SES); // limpiar cualquier token viejo guardado
+    sessionStorage.removeItem(SK_SES);
     document.getElementById('gate-2fa').style.display='none';
     document.getElementById('dash').style.display='block';
-    document.getElementById('fa-err').style.display='none';
+    errEl.style.display='none';
     reloadDash();
-  } catch(_){ document.getElementById('fa-err').style.display='block'; }
+  } catch(e){
+    errEl.textContent='⚠ ' + (e.message||'Error al verificar. Intenta de nuevo.');
+    errEl.style.display='block';
+  }
   doneLoading();
 }
 
